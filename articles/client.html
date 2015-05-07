@@ -1,0 +1,316 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Murano client &mdash; Murano</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.0.dev20',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Murano" href="../index.html" />
+    <link rel="next" title="Murano package repository" href="repository.html" />
+    <link rel="prev" title="Murano Automated Tests Description" href="test_docs.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="murano-client">
+<span id="client"></span><h1>Murano client<a class="headerlink" href="#murano-client" title="Permalink to this headline">¶</a></h1>
+<p>Module python-muranoclient comes with CLI <em>murano</em> utility, that interacts with
+Murano application catalog</p>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>To install latest murano CLI client run the following command in your shell:</p>
+<div class="highlight-python"><div class="highlight"><pre>pip install python-muranoclient
+</pre></div>
+</div>
+<p>Alternatively you can checkout the latest version from
+<a class="reference external" href="https://git.openstack.org/cgit/openstack/python-muranoclient">https://git.openstack.org/cgit/openstack/python-muranoclient</a></p>
+</div>
+<div class="section" id="using-cli-client">
+<h2>Using CLI client<a class="headerlink" href="#using-cli-client" title="Permalink to this headline">¶</a></h2>
+<p>In order to use the CLI, you must provide your OpenStack username, password,
+tenant name or id, and auth endpoint. Use the corresponding arguments
+(<tt class="docutils literal"><span class="pre">--os-username</span></tt>, <tt class="docutils literal"><span class="pre">--os-password</span></tt>, <tt class="docutils literal"><span class="pre">--os-tenant-name</span></tt> or
+<tt class="docutils literal"><span class="pre">--os-tenant-id</span></tt>, <tt class="docutils literal"><span class="pre">--os-auth-url</span></tt> and <tt class="docutils literal"><span class="pre">--murano-url</span></tt>) or
+set corresponding environment variables:</p>
+<div class="highlight-python"><div class="highlight"><pre>export OS_USERNAME=user
+export OS_PASSWORD=password
+export OS_TENANT_NAME=tenant
+export OS_AUTH_URL=http://auth.example.com:5000/v2.0
+export MURANO_URL=http://murano.example.com:8082/
+</pre></div>
+</div>
+<p>Once you&#8217;ve configured your authentication parameters, you can run <tt class="docutils literal"><span class="pre">murano</span>
+<span class="pre">help</span></tt> to see a complete listing of available commands and arguments and
+<tt class="docutils literal"><span class="pre">murano</span> <span class="pre">help</span> <span class="pre">&lt;sub_command&gt;</span></tt> to get help on specific subcommand.</p>
+</div>
+<div class="section" id="bash-completion">
+<h2>Bash completion<a class="headerlink" href="#bash-completion" title="Permalink to this headline">¶</a></h2>
+<p>To get the latest bash completion script download <a class="reference external" href="https://git.openstack.org/cgit/openstack/python-muranoclient/plain/tools/murano.bash_completion">murano.bash_completion</a>
+from the source repository and add it to your completion scripts.</p>
+</div>
+<div class="section" id="listing-currently-installed-packages">
+<h2>Listing currently installed packages<a class="headerlink" href="#listing-currently-installed-packages" title="Permalink to this headline">¶</a></h2>
+<p>To get list of currently installed packages run:</p>
+<div class="highlight-python"><div class="highlight"><pre>murano package-list
+</pre></div>
+</div>
+<p>To show details about specific package run:</p>
+<div class="highlight-python"><div class="highlight"><pre>murano package-show &lt;PKG_ID&gt;
+</pre></div>
+</div>
+</div>
+<div class="section" id="importing-packages-in-murano">
+<h2>Importing packages in Murano<a class="headerlink" href="#importing-packages-in-murano" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">package-import</span></tt> subcommand can install packages in several different ways:</dt>
+<dd><ul class="first last simple">
+<li>from a locall file</li>
+<li>from a http url</li>
+<li>from murano app repository</li>
+</ul>
+</dd>
+</dl>
+<p>When creating a package you can specify it&#8217;s categories with
+<tt class="docutils literal"><span class="pre">-c/--categories</span></tt> and set it&#8217;s publicity with <tt class="docutils literal"><span class="pre">--public</span></tt></p>
+<p>To import a local package run:</p>
+<div class="highlight-python"><div class="highlight"><pre>murano package-import /path/to/package.zip
+</pre></div>
+</div>
+<p>To import a package from http url run:</p>
+<div class="highlight-python"><div class="highlight"><pre>murano package-import http://example.com/path/to/package.zip
+</pre></div>
+</div>
+<p>And finally you can import a package from Murano repository. To do so you have
+to specify base url for the repository with <tt class="docutils literal"><span class="pre">--murano-repo-url</span></tt> or with the
+corresponding <tt class="docutils literal"><span class="pre">MURANO_REPO_URL</span></tt> environment variable. After doing so,
+running:</p>
+<div class="highlight-python"><div class="highlight"><pre>murano --murano-repo-url=&quot;http://example.com/&quot; package-import io.app.foo
+</pre></div>
+</div>
+<p>would access specified repository and download app <tt class="docutils literal"><span class="pre">io.app.foo</span></tt> from it&#8217;s
+app directory. This option supports an optional <tt class="docutils literal"><span class="pre">--version</span></tt> parameter, that
+would instruct murano client to download package of a specific version.</p>
+<p><tt class="docutils literal"><span class="pre">package-import</span></tt> inspects package requirements specified in the package&#8217;s
+manifest under <cite>Require</cite> section and attempts to import them from
+Murano Repository.
+<tt class="docutils literal"><span class="pre">package-import</span></tt> also inspects any image prerequisites, mentioned in the
+<cite>images.lst</cite> file in the package. If there are any image requirements client
+would inspect images already present in the image database. Unless image with
+the specific name and hash is present client would attempt to download it.</p>
+<p>For more info about specifiying images and requirements for the package see
+package creation docs: <a class="reference internal" href="app_pkg.html#app-pkg"><em>Composing application package manual</em></a>.</p>
+<p>If any of the packages, being installed is already registerd in Murano, client
+would ask you what do do with it. You can specify the default action with
+<tt class="docutils literal"><span class="pre">--exists-action</span></tt>, passing <cite>s</cite> for skip, <cite>u</cite> for update, and <cite>a</cite> for abort.</p>
+</div>
+<div class="section" id="importing-bundles-of-packages-in-murano">
+<h2>Importing bundles of packages in Murano<a class="headerlink" href="#importing-bundles-of-packages-in-murano" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">package-import</span></tt> subcommand can install packages in several different ways:</dt>
+<dd><ul class="first last simple">
+<li>from a locall file</li>
+<li>from a http url</li>
+<li>from murano app repository</li>
+</ul>
+</dd>
+</dl>
+<p>When creating a package you can specify it&#8217;s categories with
+<tt class="docutils literal"><span class="pre">-c/--categories</span></tt> and set it&#8217;s publicity with <tt class="docutils literal"><span class="pre">--public</span></tt></p>
+<p>To import a local bundle run:</p>
+<div class="highlight-python"><div class="highlight"><pre>murano bundle-import /path/to/bundle
+</pre></div>
+</div>
+<p>To import a bundle from http url run:</p>
+<div class="highlight-python"><div class="highlight"><pre>murano bundle-import http://example.com/path/to/bundle
+</pre></div>
+</div>
+<p>To import a bundle from murano repository run:</p>
+<div class="highlight-python"><div class="highlight"><pre>murano bundle-import bundle_name
+</pre></div>
+</div>
+<p>Note: When importing from a local file packages would first be searched in a
+directory, relative to the directory containing the bundle file itself. This
+is done to facilitate installing bundles in an environment with no access to
+the repository itself.</p>
+</div>
+<div class="section" id="deleting-packages-from-murano">
+<h2>Deleting packages from murano<a class="headerlink" href="#deleting-packages-from-murano" title="Permalink to this headline">¶</a></h2>
+<p>To delete a package run:</p>
+<div class="highlight-python"><div class="highlight"><pre>murano package-delete &lt;PKG_ID&gt;
+</pre></div>
+</div>
+</div>
+<div class="section" id="downloading-package-file">
+<h2>Downloading package file<a class="headerlink" href="#downloading-package-file" title="Permalink to this headline">¶</a></h2>
+<p>Running:</p>
+<div class="highlight-python"><div class="highlight"><pre>murano package-download &lt;PKG_ID&gt; &gt; file.zip
+</pre></div>
+</div>
+<p>would download the zip arhive with specified package</p>
+</div>
+<div class="section" id="creating-a-package">
+<h2>Creating a package<a class="headerlink" href="#creating-a-package" title="Permalink to this headline">¶</a></h2>
+<p>Murano client is able to create application packages from package source
+files/directories. To find out more about this command run:</p>
+<div class="highlight-python"><div class="highlight"><pre>murano help package-create
+</pre></div>
+</div>
+<p>This command is useful, when application package files are spread across
+several directories, and for auto-generating packages from heat templates
+For more info about package composition please see package creation docs:
+<a class="reference internal" href="app_pkg.html#app-pkg"><em>Composing application package manual</em></a>.</p>
+</div>
+<div class="section" id="managing-environments">
+<h2>Managing Environments<a class="headerlink" href="#managing-environments" title="Permalink to this headline">¶</a></h2>
+<p>It is possible to create/update/delete environments with following commands:</p>
+<div class="highlight-python"><div class="highlight"><pre>murano environment-create &lt;NAME&gt;
+murano environment-delete &lt;NAME_OR_ID&gt;
+murano environment-list
+murano environment-rename &lt;OLD_NAME_OR_ID&gt; &lt;NEW_NAME&gt;
+murano environment-show &lt;NAME_OR_ID&gt;
+</pre></div>
+</div>
+<p>You can get list of deployments for environmet with:</p>
+<div class="highlight-python"><div class="highlight"><pre>murano deployment-list &lt;NAME_OR_ID&gt;
+</pre></div>
+</div>
+</div>
+<div class="section" id="managing-categories">
+<h2>Managing Categories<a class="headerlink" href="#managing-categories" title="Permalink to this headline">¶</a></h2>
+<p>It is possible to create/update/delete categories with following commands:</p>
+<div class="highlight-python"><div class="highlight"><pre>murano category-create &lt;NAME&gt;
+murano category-delete &lt;ID&gt; [&lt;ID&gt; ...]
+murano category-list
+murano category-show &lt;ID&gt;
+</pre></div>
+</div>
+</div>
+<div class="section" id="managing-environmet-templates">
+<h2>Managing Environmet Templates<a class="headerlink" href="#managing-environmet-templates" title="Permalink to this headline">¶</a></h2>
+<p>It is possible to manage environment templates with following commands:</p>
+<div class="highlight-python"><div class="highlight"><pre>murano env-template-create &lt;NAME&gt;
+murano env-template-add-app &lt;NAME&gt; &lt;FILE&gt;
+murano env-template-del-app &lt;NAME&gt; &lt;FILE&gt;
+murano env-template-delete &lt;ID&gt;
+murano env-template-list
+murano env-template-show &lt;ID&gt;
+murano env-template-update &lt;ID&gt; &lt;NEW_NAME&gt;
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Murano client</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#using-cli-client">Using CLI client</a></li>
+<li><a class="reference internal" href="#bash-completion">Bash completion</a></li>
+<li><a class="reference internal" href="#listing-currently-installed-packages">Listing currently installed packages</a></li>
+<li><a class="reference internal" href="#importing-packages-in-murano">Importing packages in Murano</a></li>
+<li><a class="reference internal" href="#importing-bundles-of-packages-in-murano">Importing bundles of packages in Murano</a></li>
+<li><a class="reference internal" href="#deleting-packages-from-murano">Deleting packages from murano</a></li>
+<li><a class="reference internal" href="#downloading-package-file">Downloading package file</a></li>
+<li><a class="reference internal" href="#creating-a-package">Creating a package</a></li>
+<li><a class="reference internal" href="#managing-environments">Managing Environments</a></li>
+<li><a class="reference internal" href="#managing-categories">Managing Categories</a></li>
+<li><a class="reference internal" href="#managing-environmet-templates">Managing Environmet Templates</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="test_docs.html"
+                                  title="previous chapter">Murano Automated Tests Description</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="repository.html"
+                                  title="next chapter">Murano package repository</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/articles/client.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="repository.html" title="Murano package repository"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="test_docs.html" title="Murano Automated Tests Description"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Murano</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Wed Apr 29 17:52:18 2015, commit 9c804c9.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,354 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Composing application package manual &mdash; Murano</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.0.dev20',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Murano" href="../index.html" />
+    <link rel="next" title="Uploading HOT templates to the Application Catalog" href="heat_support.html" />
+    <link rel="prev" title="Murano Policy Enforcement - Developer Guide" href="policy_enf_dev.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="composing-application-package-manual">
+<span id="app-pkg"></span><h1>Composing application package manual<a class="headerlink" href="#composing-application-package-manual" title="Permalink to this headline">¶</a></h1>
+<p>Murano is Application catalog that supports types of applications. This document intends to make composing application packages easily.</p>
+<div class="section" id="step-1-prepare-execution-plans">
+<h2>Step 1.  Prepare Execution Plans<a class="headerlink" href="#step-1-prepare-execution-plans" title="Permalink to this headline">¶</a></h2>
+<p>An <em>Execution Plan</em> is a set of metadata that describes the installation process of an application in a virtual machine.
+It&#8217;s a minimal unit of execution that can be triggered in Murano Workflows and should be understandable by Murano agent. From <em>Execution plans</em> any script can be triggered.
+It could be any type of scripts which will execute commands and install application components as the result. Each script may consist of one or more files.
+Scripts may be reused across several Execution Plans. One of the scripts should be an entry point and should be specified in a resource template file in <em>Scripts</em>.
+Besides the <em>Scripts</em> section the following sections must be presented in a resource template file:</p>
+<ul>
+<li><p class="first"><strong>FormatVersion</strong> - version of <em>Execution Plan</em> syntax format</p>
+</li>
+<li><p class="first"><strong>Version</strong> - version of <em>Execution Plan</em></p>
+</li>
+<li><p class="first"><strong>Name</strong> -  human-readable name of the Execution Plan</p>
+</li>
+<li><p class="first"><strong>Parameters</strong> - parameters received from MuranoPL</p>
+</li>
+<li><p class="first"><strong>Body</strong> - Python statement, should start with | symbol</p>
+</li>
+<li><p class="first"><strong>Scripts</strong> - dictionary that maps script names to script definitions.</p>
+<blockquote>
+<div><p>Scripts are the building blocks of Execution Plans and they may be executed as a whole (like a single piece of code), expose some functions that can be independently called in scripts. This depends on Deployment Platform and Executor capabilities. One script can be defined with the following properties</p>
+<ul class="simple">
+<li><strong>Type</strong> Deployment Platform name that script is targeted to.</li>
+<li><strong>Version</strong> optional minimum version of deployment platform/executor required by the script.</li>
+<li><strong>EntryPoint</strong> relative path to the file that contains a script entry point</li>
+<li><strong>Files</strong> This is an optional array of additional files required for the script. Use <em>&lt;&gt;</em> to specify a relative path to the file. The root directory is <em>Resource/scripts</em>.</li>
+<li><strong>Options</strong> an optional argument of type contains additional options</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<p id="telnet-agent">Example <em>DeployTelnet.template</em></p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">FormatVersion</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">2.0.0</span>
+<span class="l-Scalar-Plain">Version</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">1.0.0</span>
+<span class="l-Scalar-Plain">Name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Deploy Telnet</span>
+
+<span class="l-Scalar-Plain">Parameters</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">appName</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$appName</span>
+
+<span class="l-Scalar-Plain">Body</span><span class="p-Indicator">:</span> <span class="p-Indicator">|</span>
+  <span class="no">return deploy(args.appName).stdout</span>
+
+<span class="l-Scalar-Plain">Scripts</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">deploy</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Type</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Application</span>
+    <span class="l-Scalar-Plain">Version</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">1.0.0</span>
+    <span class="l-Scalar-Plain">EntryPoint</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">deployTelnet.sh</span>
+    <span class="l-Scalar-Plain">Files</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">installer.sh</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">common.sh</span>
+    <span class="l-Scalar-Plain">Options</span><span class="p-Indicator">:</span>
+      <span class="l-Scalar-Plain">captureStdout</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">true</span>
+      <span class="l-Scalar-Plain">captureStderr</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">false</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="step-2-prepare-muranopl-class-definitions">
+<h2>Step 2.  Prepare MuranoPL class definitions<a class="headerlink" href="#step-2-prepare-muranopl-class-definitions" title="Permalink to this headline">¶</a></h2>
+<p>MuranoPL classes control application deployment workflow execution. Full information about MuranoPL classes see here: <a class="reference internal" href="../murano_pl/murano_pl_index.html#muranopl-spec"><em>MuranoPL: Murano Programming Language</em></a></p>
+<p id="telnet-class">Example <em>telnet.yaml</em></p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">Namespaces</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">=</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano.apps.linux</span>
+  <span class="l-Scalar-Plain">std</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano</span>
+  <span class="l-Scalar-Plain">res</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano.resources</span>
+
+
+<span class="l-Scalar-Plain">Name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Telnet</span>
+
+<span class="c1"># Inheritance from io.murano.Application class</span>
+<span class="c1"># (located at Murano Core library) indicates,</span>
+<span class="c1"># that this is a complete application</span>
+<span class="c1"># and that &#39;deploy&#39; method has to be defined.</span>
+<span class="l-Scalar-Plain">Extends</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">std:Application</span>
+
+<span class="l-Scalar-Plain">Properties</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.string().notNull()</span>
+
+  <span class="l-Scalar-Plain">instance</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.class(res:Instance).notNull()</span>
+
+
+<span class="l-Scalar-Plain">Methods</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">deploy</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Body</span><span class="p-Indicator">:</span>
+      <span class="c1"># Determine the environment to which the application belongs.</span>
+      <span class="c1"># This message will be stored in deployment logs and available in UI</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$this.find(std:Environment).reporter.report($this, &#39;Creating VM for Telnet instace.&#39;)</span>
+      <span class="c1"># Deploy VM</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.instance.deploy()</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$this.find(std:Environment).reporter.report($this, &#39;Instance is created. Setup Telnet service.&#39;)</span>
+      <span class="c1"># Create instance of murano resource class. Agent will use it to find</span>
+      <span class="c1"># corresponding execution plan by the file name</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$resources</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">new(&#39;io.murano.system.Resources&#39;)</span>
+      <span class="c1"># Deploy Telnet</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$template</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$resources.yaml(&#39;DeployTelnet.template&#39;)</span>
+      <span class="c1"># Send prepared execution plan to Murano agent</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.instance.agent.call($template, $resources)</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$this.find(std:Environment).reporter.report($this, &#39;Telnet service setup is done.&#39;)</span>
+</pre></div>
+</div>
+<p>Note, that</p>
+<ul class="simple">
+<li><em>io.murano.system.Resources</em> is a system class, defined in MuranoPL. MuranoPL system classes are described <a class="reference external" href="http://git.openstack.org/cgit/openstack/murano/tree/meta/io.murano/Classes">here</a>.</li>
+<li><em>io.murano.resources.Instance</em> is a class, defined in the core Murano library, contains Murano Agent templates and virtual machine initialization scripts.</li>
+<li>$this.find(std:Environment).reporter.report($this, &#8216;Creating VM for Telnet instance.&#8217;) - this is the way of sending reports to Murano dashboard during deployment</li>
+</ul>
+</div>
+<div class="section" id="step-3-prepare-dynamic-ui-form-definition">
+<h2>Step 3.  Prepare dynamic UI form definition<a class="headerlink" href="#step-3-prepare-dynamic-ui-form-definition" title="Permalink to this headline">¶</a></h2>
+<p>Create a form definition in a yaml format. Before configuring a form, compose a list of parameters that will be required to set by a user.
+Some form fields that are responsible for choosing a flavor, image and availability zone are better to use in every application creation wizard.
+Syntax of  Dynamic UI can be found see at the corresponding section: <a class="reference internal" href="dynamic_ui.html#dynamicuispec"><em>Dynamic UI Definition specification</em></a>.
+Full example with Telnet application form definition <em class="xref std std-ref">Telnet Definition</em>.</p>
+</div>
+<div class="section" id="step-4-prepare-application-logo">
+<h2>Step 4.  Prepare application logo<a class="headerlink" href="#step-4-prepare-application-logo" title="Permalink to this headline">¶</a></h2>
+<p>Find or create a simple image (in a .png format) associated with your application. Is should be small and have a square shape. You can specify any name of your image. In our example, let&#8217;s name it <em>telnet.png</em>.</p>
+</div>
+<div class="section" id="step-5-prepare-manifest-file">
+<h2>Step 5.  Prepare manifest file<a class="headerlink" href="#step-5-prepare-manifest-file" title="Permalink to this headline">¶</a></h2>
+<p>General application metadata should be described in the application manifest file. It should be in a yaml format and should have the following sections</p>
+<ul class="simple">
+<li><strong>Format</strong> - version of a manifest syntax format</li>
+<li><strong>Type</strong> - package type. Valid choices are <em>Library</em> and <em>Application</em></li>
+<li><strong>Name</strong> - human-readable application name</li>
+<li><strong>Description</strong> - a brief description of an application</li>
+<li><strong>Author</strong> - person or company name which created an application package</li>
+<li><strong>Classes</strong> - MuranoPL class list, on which application deployment is based</li>
+<li><strong>Tags</strong> - list of words, associated with this application. Will be helpful during the search. <em>Optional</em> parameter</li>
+<li><strong>Require</strong> - list of applications with versions, required by this application. Currently only used by repository importing mechanism. <em>Optional</em> parameter</li>
+</ul>
+<p id="telnet-manifest">Example <em>manifest.yaml</em></p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">Format</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">1.0</span>
+<span class="l-Scalar-Plain">Type</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Application</span>
+<span class="l-Scalar-Plain">FullName</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano.apps.linux.Telnet</span>
+<span class="l-Scalar-Plain">Name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Telnet</span>
+<span class="l-Scalar-Plain">Description</span><span class="p-Indicator">:</span> <span class="p-Indicator">|</span>
+ <span class="no">Telnet is the traditional protocol for making remote console connections over TCP.</span>
+<span class="l-Scalar-Plain">Author</span><span class="p-Indicator">:</span> <span class="s">&#39;Mirantis,</span><span class="nv"> </span><span class="s">Inc&#39;</span>
+<span class="l-Scalar-Plain">Tags</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="nv">Linux</span><span class="p-Indicator">,</span> <span class="nv">connection</span><span class="p-Indicator">]</span>
+<span class="l-Scalar-Plain">Classes</span><span class="p-Indicator">:</span>
+ <span class="l-Scalar-Plain">io.murano.apps.linux.Telnet</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">telnet.yaml</span>
+<span class="l-Scalar-Plain">UI</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">telnet.yaml</span>
+<span class="l-Scalar-Plain">Logo</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">telnet.png</span>
+<span class="l-Scalar-Plain">Require</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">io.murano.apps.TelnetHelper</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">0.0.1</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="step-6-prepare-images-lst-file">
+<h2>Step 6.  Prepare images.lst file<a class="headerlink" href="#step-6-prepare-images-lst-file" title="Permalink to this headline">¶</a></h2>
+<p>This step is optional. If you plan on providing images required by your
+application, you can include <tt class="docutils literal"><span class="pre">images.lst</span></tt> file with image specifications</p>
+<p>Example <em>images.lst</em></p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">Images</span><span class="p-Indicator">:</span>
+<span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Name</span><span class="p-Indicator">:</span> <span class="s">&#39;my_image.qcow2&#39;</span>
+  <span class="l-Scalar-Plain">Hash</span><span class="p-Indicator">:</span> <span class="s">&#39;64d7c1cd2b6f60c92c14662941cb7913&#39;</span>
+  <span class="l-Scalar-Plain">Meta</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">title</span><span class="p-Indicator">:</span> <span class="s">&#39;tef&#39;</span>
+    <span class="l-Scalar-Plain">type</span><span class="p-Indicator">:</span> <span class="s">&#39;linux&#39;</span>
+  <span class="l-Scalar-Plain">DiskFormat</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">qcow2</span>
+  <span class="l-Scalar-Plain">ContainerFormat</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">bare</span>
+<span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Name</span><span class="p-Indicator">:</span> <span class="s">&#39;my_other_image.qcow2&#39;</span>
+  <span class="l-Scalar-Plain">Hash</span><span class="p-Indicator">:</span> <span class="s">&#39;64d7c1cd2b6f60c92c14662941cb7913&#39;</span>
+  <span class="l-Scalar-Plain">Meta</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">title</span><span class="p-Indicator">:</span> <span class="s">&#39;tef&#39;</span>
+    <span class="l-Scalar-Plain">type</span><span class="p-Indicator">:</span> <span class="s">&#39;linux&#39;</span>
+  <span class="l-Scalar-Plain">DiskFormat</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">qcow2</span>
+  <span class="l-Scalar-Plain">ContainerFormat</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">bare</span>
+  <span class="l-Scalar-Plain">Url</span><span class="p-Indicator">:</span> <span class="s">&#39;http://path.to/images/file.qcow2&#39;</span>
+</pre></div>
+</div>
+<p>If <em>Url</em> is omitted - the images would be searched for in the Murano Repository.</p>
+</div>
+<div class="section" id="step-7-compose-a-zip-archive">
+<h2>Step 7.  Compose a zip archive<a class="headerlink" href="#step-7-compose-a-zip-archive" title="Permalink to this headline">¶</a></h2>
+<p>An application archive should have the following structure</p>
+<ul>
+<li><dl class="first docutils">
+<dt><em>Classes</em> folder</dt>
+<dd><p class="first last">MuranoPL class definitions should be put inside this folder</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><em>Resources</em> folder</dt>
+<dd><p class="first last">This folder should contain Execution scripts</p>
+</dd>
+</dl>
+<ul>
+<li><dl class="first docutils">
+<dt><em>Scripts</em> folder</dt>
+<dd><p class="first last">All script files, needed for an application deployment should be placed here</p>
+</dd>
+</dl>
+</li>
+</ul>
+</li>
+<li><dl class="first docutils">
+<dt><em>UI</em> folder</dt>
+<dd><p class="first last">Place dynamic ui yaml definitions here or skip to use the default name <em>ui.yaml</em></p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><em>logo.png</em></dt>
+<dd><p class="first last">Image file should be placed in the root folder. It can have any name, just specify it in the manifest file or skip to use default <em>logo.png</em> name</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><em>manifest.yaml</em></dt>
+<dd><p class="first last">Application manifest file. It&#8217;s an application entry point. The file name is fixed.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><em>images.lst</em></dt>
+<dd><p class="first last">List of required images. Optional file.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Congratulations! Your application is ready to be uploaded to an Application Catalog.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Composing application package manual</a><ul>
+<li><a class="reference internal" href="#step-1-prepare-execution-plans">Step 1.  Prepare Execution Plans</a></li>
+<li><a class="reference internal" href="#step-2-prepare-muranopl-class-definitions">Step 2.  Prepare MuranoPL class definitions</a></li>
+<li><a class="reference internal" href="#step-3-prepare-dynamic-ui-form-definition">Step 3.  Prepare dynamic UI form definition</a></li>
+<li><a class="reference internal" href="#step-4-prepare-application-logo">Step 4.  Prepare application logo</a></li>
+<li><a class="reference internal" href="#step-5-prepare-manifest-file">Step 5.  Prepare manifest file</a></li>
+<li><a class="reference internal" href="#step-6-prepare-images-lst-file">Step 6.  Prepare images.lst file</a></li>
+<li><a class="reference internal" href="#step-7-compose-a-zip-archive">Step 7.  Compose a zip archive</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="policy_enf_dev.html"
+                                  title="previous chapter">Murano Policy Enforcement - Developer Guide</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="heat_support.html"
+                                  title="next chapter">Uploading HOT templates to the Application Catalog</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/articles/app_pkg.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="heat_support.html" title="Uploading HOT templates to the Application Catalog"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="policy_enf_dev.html" title="Murano Policy Enforcement - Developer Guide"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Murano</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Wed Apr 29 17:52:18 2015, commit 9c804c9.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

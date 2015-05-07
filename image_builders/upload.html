@@ -1,0 +1,200 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Upload Image Into Glance &mdash; Murano</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.0.dev20',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Murano" href="../index.html" />
+    <link rel="up" title="Building Murano Image" href="index.html" />
+    <link rel="next" title="Murano Automated Tests Description" href="../articles/test_docs.html" />
+    <link rel="prev" title="Linux Image" href="linux.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="upload-image-into-glance">
+<h1>Upload Image Into Glance<a class="headerlink" href="#upload-image-into-glance" title="Permalink to this headline">¶</a></h1>
+<p>To deploy applications with Murano, virtual machine images should be uploaded into Glance in a special way - <em>murano_image_info</em> property should be set.</p>
+<ol class="arabic simple">
+<li>Use the glance image-create command to import your disk image to Glance:</li>
+</ol>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> glance image-create --name &lt;NAME&gt;  --is-public <span class="nb">true</span> <span class="se">\</span>
+<span class="gp">&gt;</span> --disk-format qcow2 --container-format bare <span class="se">\</span>
+<span class="gp">&gt;</span> --file &lt;IMAGE_FILE&gt; --property &lt;IMAGE_METADATA&gt;
+</pre></div>
+</div>
+<p>Replace the command line arguments to glance image-create with the appropriate values for your environment and disk image:</p>
+<ul class="simple">
+<li>Replace <strong>&lt;NAME&gt;</strong> with the name that users will refer to the disk image by. E.g. <strong>ws-2012-std</strong></li>
+<li>Replace <strong>&lt;IMAGE_FILE&gt;</strong> with the local path to the image file to upload. E.g. <strong>ws-2012-std.qcow2</strong>.</li>
+<li>Replace <strong>&lt;IMAGE_METADATA&gt;</strong> with the following property string</li>
+</ul>
+<div class="highlight-text"><div class="highlight"><pre>murano_image_info=&#39;{&quot;title&quot;: &quot;Windows 2012 Standart Edition&quot;, &quot;type&quot;: &quot;windows.2012&quot;}&#39;
+</pre></div>
+</div>
+<p>where:</p>
+<ul class="simple">
+<li><strong>title</strong> - user-friendly description of the image</li>
+<li><strong>type</strong> - murano image type, see <a class="reference internal" href="#murano-image-types"><em>Murano Image Types</em></a></li>
+</ul>
+<ol class="arabic simple" start="2">
+<li>To update metadata of the existing image run the command:</li>
+</ol>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> glance image-update &lt;IMAGE_ID&gt; --property &lt;IMAGE_MATADATA&gt;
+</pre></div>
+</div>
+<ul class="simple">
+<li>Replace <strong>&lt;IMAGE_ID&gt;</strong> with image id from the previous command output.</li>
+<li>Replace <strong>&lt;IMAGE_METADATA&gt;</strong> with murano_image_info property, e.g.</li>
+</ul>
+<div class="highlight-text"><div class="highlight"><pre>murano_image_info=&#39;{&quot;title&quot;: &quot;Windows 2012 Standart Edition&quot;, &quot;type&quot;: &quot;windows.2012&quot;}&#39;
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The value of the <strong>&#8211;property</strong> argument (named <strong>murano_image_info</strong>) is a JSON string.
+Only double quotes are valid in JSON, so please type the string exactly as in the example above.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Already existing image could be marked in a simple way in Horizon UI with Murano dashboard installed.
+Navigate to <em>Murano -&gt; Manage -&gt; Images -&gt; Mark Image</em> and fill up a form:</p>
+<ul class="last simple">
+<li><strong>Image</strong> - ws-2012-std</li>
+<li><strong>Title</strong> - My Prepared Image</li>
+<li><strong>Type</strong> - Windows Server 2012</li>
+</ul>
+</div>
+<p>After these steps desired image can be chosen in application creation wizard.</p>
+<div class="section" id="murano-image-types">
+<span id="id1"></span><h2>Murano Image Types<a class="headerlink" href="#murano-image-types" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Type Name</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>windows.2012</td>
+<td>Windows Server 2012</td>
+</tr>
+<tr class="row-odd"><td>linux</td>
+<td>Generic Linux images, Ubuntu / Debian, RedHat / Centos, etc</td>
+</tr>
+<tr class="row-even"><td>cirrus.demo</td>
+<td>Murano demo image, based on CirrOS</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Upload Image Into Glance</a><ul>
+<li><a class="reference internal" href="#murano-image-types">Murano Image Types</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="linux.html"
+                                  title="previous chapter">Linux Image</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="../articles/test_docs.html"
+                                  title="next chapter">Murano Automated Tests Description</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/image_builders/upload.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../articles/test_docs.html" title="Murano Automated Tests Description"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="linux.html" title="Linux Image"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Murano</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Building Murano Image</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Wed Apr 29 17:52:18 2015, commit 9c804c9.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

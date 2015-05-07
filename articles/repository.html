@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Murano package repository &mdash; Murano</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.0.dev20',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Murano" href="../index.html" />
+    <link rel="next" title="Contributing to Murano" href="../contributing.html" />
+    <link rel="prev" title="Murano client" href="client.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="murano-package-repository">
+<span id="repository"></span><h1>Murano package repository<a class="headerlink" href="#murano-package-repository" title="Permalink to this headline">¶</a></h1>
+<p>Murano client and dashboard are both capable of installing packages and
+bundles of packages from murano repository. To do so you should set
+<tt class="docutils literal"><span class="pre">MURANO_REPO_URL</span></tt> settings in murano dashboard or <tt class="docutils literal"><span class="pre">MURANO_REPO_URL</span></tt> env
+variable for the CLI client and use the respective command for package import.
+These commands would then automatically import all the prerequisites for the
+app being installed along with any images, mentioned in said apps.</p>
+<p>For more info about importing from repository see <a class="reference internal" href="client.html#client"><em>Murano client</em></a>.</p>
+<div class="section" id="setting-up-your-own-repository">
+<h2>Setting up your own repository<a class="headerlink" href="#setting-up-your-own-repository" title="Permalink to this headline">¶</a></h2>
+<p>It&#8217;s fairly easy to set up your own murano package repository.
+To do so you need a web server, that would serve 3 directories:</p>
+<blockquote>
+<div><ul class="simple">
+<li>/apps/</li>
+<li>/bundles/</li>
+<li>/images/</li>
+</ul>
+</div></blockquote>
+<p>When importing an app by name client would append any version info, if present
+to the app name, <tt class="docutils literal"><span class="pre">.zip</span></tt> file extension and search for that file in the
+<tt class="docutils literal"><span class="pre">apps</span></tt> directory.</p>
+<p>When importing a bundle by name client would append <tt class="docutils literal"><span class="pre">.bundle</span></tt> file
+extension to the bundle name and search it in the <tt class="docutils literal"><span class="pre">bundles</span></tt> directory.
+Bundle file is a json or a yaml file with the following structure:</p>
+<div class="highlight-json"><div class="highlight"><pre><span class="p">{</span><span class="nt">&quot;Packages&quot;</span><span class="p">:</span>
+    <span class="p">[</span>
+        <span class="p">{</span><span class="nt">&quot;Name&quot;</span><span class="p">:</span> <span class="s2">&quot;io.murano.apps.ApacheHttpServer&quot;</span><span class="p">},</span>
+        <span class="p">{</span><span class="nt">&quot;Version&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="nt">&quot;Name&quot;</span><span class="p">:</span> <span class="s2">&quot;io.murano.apps.Nginx&quot;</span><span class="p">},</span>
+        <span class="p">{</span><span class="nt">&quot;Version&quot;</span><span class="p">:</span> <span class="s2">&quot;0.0.1&quot;</span><span class="p">,</span> <span class="nt">&quot;Name&quot;</span><span class="p">:</span> <span class="s2">&quot;io.murano.apps.Lighttpd&quot;</span><span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Glance images can be auto-imported by client, when mentioned in <tt class="docutils literal"><span class="pre">images.lst</span></tt>
+inside the package. Please see <a class="reference internal" href="app_pkg.html#app-pkg"><em>Composing application package manual</em></a> for more info about pakcage
+composition.
+When importing images from <tt class="docutils literal"><span class="pre">image.lst</span></tt> file client simply searches for a
+file with the same name as the <tt class="docutils literal"><span class="pre">Name</span></tt> attribute of the image in the
+<tt class="docutils literal"><span class="pre">images</span></tt> directory of the repository.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Murano package repository</a><ul>
+<li><a class="reference internal" href="#setting-up-your-own-repository">Setting up your own repository</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="client.html"
+                                  title="previous chapter">Murano client</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="../contributing.html"
+                                  title="next chapter">Contributing to Murano</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/articles/repository.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../contributing.html" title="Contributing to Murano"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="client.html" title="Murano client"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Murano</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Wed Apr 29 17:52:18 2015, commit 9c804c9.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

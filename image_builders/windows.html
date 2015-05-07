@@ -1,0 +1,697 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Windows Image &mdash; Murano</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.0.dev20',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Murano" href="../index.html" />
+    <link rel="up" title="Building Murano Image" href="index.html" />
+    <link rel="next" title="Linux Image" href="linux.html" />
+    <link rel="prev" title="Building Murano Image" href="index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="windows-image">
+<h1>Windows Image<a class="headerlink" href="#windows-image" title="Permalink to this headline">¶</a></h1>
+<p>Murano requires a Windows Image in QCOW2 format to be built and uploaded into Glance.</p>
+<p>The easiest way to build Windows image for Murano is to build it on the host where your OpenStack is installed.</p>
+<div class="section" id="prepare-image-builder-host">
+<h2>Prepare Image Builder Host<a class="headerlink" href="#prepare-image-builder-host" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="install-kvm">
+<h3>Install KVM<a class="headerlink" href="#install-kvm" title="Permalink to this headline">¶</a></h3>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This guide was tested on Ubuntu Server 12.04 x64.</p>
+</div>
+<p>KVM is a default hypervisor in OpenStack, so our build scripts are targeted to this hypervisor only. It may change in future, though.</p>
+<p>Install KVM and some additional packages that are required by our scripts</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">#</span> apt-get install qemu-kvm virtinst virt-manager
+</pre></div>
+</div>
+<p>Check that your hardware supports hardware virtualization.</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> kvm-ok
+<span class="go">INFO: /dev/kvm exists</span>
+<span class="go">KVM acceleration can be used</span>
+</pre></div>
+</div>
+<p>If your output differs, check that harware virtualization is enabled in your BIOS settings. You also could try import KVM kernel module</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> sudo modprobe kvm-intel
+</pre></div>
+</div>
+<p>or</p>
+<div class="highlight-cosole"><div class="highlight"><pre>$ sudo modprobe kvm-amd
+</pre></div>
+</div>
+<p>It might be helpful to add an appropriate module name into <strong>/etc/modules</strong> file to auto-load it during system boot. Sometimes it is required on Ubuntu systems.</p>
+</div>
+</div>
+<div class="section" id="configure-shared-resource">
+<h2>Configure Shared Resource<a class="headerlink" href="#configure-shared-resource" title="Permalink to this headline">¶</a></h2>
+<p>Murano Image Builder uses a shared folder located on the host system as an installation source for components.
+Makefile from image builder will copy required files to their locations, but you have to manually configure samba share.
+To do this, use the steps below.</p>
+<ul>
+<li><p class="first">Install samba</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">#</span> apt-get install samba
+</pre></div>
+</div>
+</li>
+<li><p class="first">Create folder that will be shared</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">#</span> mkdir -p /opt/samba/share
+<span class="gp">#</span> chown -R nobody:nogroup /opt/samba/share
+</pre></div>
+</div>
+</li>
+<li><p class="first">Configure samba server (/etc/samba/smb.conf)</p>
+<div class="highlight-text"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td><td class="code"><div class="highlight"><pre>...
+[global]
+   ...
+  security = share
+  ...
+[image-builder-share]
+    comment = Image Builder Share
+    browsable = yes
+    path = /opt/image-builder/share
+    guest ok = yes
+    guest user = nobody
+    read only = no
+    create mask = 0755
+...
+</pre></div>
+</td></tr></table></div>
+</li>
+<li><p class="first">Restart samba services</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">#</span> service smbd restart
+<span class="gp">#</span> service nmbd restart
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
+<div class="section" id="download-prerequisites">
+<h2>Download Prerequisites<a class="headerlink" href="#download-prerequisites" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="windows-server-installation-iso">
+<span id="windows-installation-iso"></span><h3>Windows Server Installation ISO<a class="headerlink" href="#windows-server-installation-iso" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="30%" />
+<col width="15%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Windows Version</th>
+<th class="head">Version String</th>
+<th class="head">Save to</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Windows Server 2008 R2 <a class="footnote-reference" href="#win2k8r2-link" id="id1">[1]</a></td>
+<td>6.1.7601</td>
+<td>/opt/image-builder/share/libvirt/images/ws-2008-eval.iso</td>
+</tr>
+<tr class="row-odd"><td>Windows Server 2012 <a class="footnote-reference" href="#win2k12-link" id="id2">[2]</a></td>
+<td>6.3.9200</td>
+<td>/opt/image-builder/share/libvirt/images/ws-2012-eval.iso</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Windows Server 2008 R2 must include Service Pack 1 updates. This is required to install PowerShell V3 which is required by Murano Agent.</p>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<table class="docutils footnote" frame="void" id="win2k8r2-link" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td><a class="reference external" href="http://www.microsoft.com/en-us/download/details.aspx?id=11093">http://www.microsoft.com/en-us/download/details.aspx?id=11093</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="win2k12-link" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td><a class="reference external" href="http://technet.microsoft.com/en-US/evalcenter/hh670538.aspx?ocid=&amp;wt.mc_id=TEC_108_1_33">http://technet.microsoft.com/en-US/evalcenter/hh670538.aspx?ocid=&amp;wt.mc_id=TEC_108_1_33</a></td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="required-components">
+<span id="required-prerequisites"></span><h3>Required Components<a class="headerlink" href="#required-components" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="30%" />
+<col width="70%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Component</th>
+<th class="head">Save to</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>VirtIO drivers for Windows <a class="footnote-reference" href="#virtio-iso-link" id="id3">[4]</a></td>
+<td>/opt/image-builder/share/libvirt/images/virtio-win-0.1-74.iso</td>
+</tr>
+<tr class="row-odd"><td>CloudBase-Init for Windows <a class="footnote-reference" href="#cloudbase-init-link" id="id4">[5]</a></td>
+<td>/opt/image-builder/share/files/CloudbaseInitSetup_Beta.msi</td>
+</tr>
+<tr class="row-even"><td>.NET 4.0 <a class="footnote-reference" href="#dot-net-40-link" id="id5">[6]</a></td>
+<td>/opt/image-builder/share/files/dotNetFx40_Full_x86_x64.exe</td>
+</tr>
+<tr class="row-odd"><td>PowerShell v3 <a class="footnote-reference" href="#powershell-v3-link" id="id6">[7]</a></td>
+<td>/opt/image-builder/share/files/Windows6.1-KB2506143-x64.msu</td>
+</tr>
+<tr class="row-even"><td>Murano Agent <a class="footnote-reference" href="#murano-agent-link" id="id7">[8]</a></td>
+<td>/opt/image-builder/share/files/MuranoAgent.zip</td>
+</tr>
+<tr class="row-odd"><td>Git client <a class="footnote-reference" href="#msysgit-link" id="id8">[9]</a></td>
+<td>/opt/image-builder/share/files/Git-1.8.1.2-preview20130601.exe</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">PowerShell V3 is a <strong>mandatory</strong> prerequisite. It is required by Murano Agent. To check your PowerShell version use PowerShell command <em>Get-Host</em>.</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">When downloading VirtIO drivers choose only stable versions.
+Unstable versions might lead to errors during guest unattended installation.
+You can check the latest version avaible here: <a class="reference external" href="http://alt.fedoraproject.org/pub/alt/virtio-win/stable">http://alt.fedoraproject.org/pub/alt/virtio-win/stable</a></p>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<table class="docutils footnote" frame="void" id="ws2012iso-link" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[3]</td><td><a class="reference external" href="http://technet.microsoft.com/en-us/evalcenter/hh670538.aspx">http://technet.microsoft.com/en-us/evalcenter/hh670538.aspx</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="virtio-iso-link" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[4]</a></td><td><a class="reference external" href="http://alt.fedoraproject.org/pub/alt/virtio-win/stable/virtio-win-0.1-74.iso">http://alt.fedoraproject.org/pub/alt/virtio-win/stable/virtio-win-0.1-74.iso</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="cloudbase-init-link" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[5]</a></td><td><a class="reference external" href="https://www.cloudbase.it/downloads/CloudbaseInitSetup_Beta.msi">https://www.cloudbase.it/downloads/CloudbaseInitSetup_Beta.msi</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="dot-net-40-link" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id5">[6]</a></td><td><a class="reference external" href="http://www.microsoft.com/en-us/download/details.aspx?id=17718">http://www.microsoft.com/en-us/download/details.aspx?id=17718</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="powershell-v3-link" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id6">[7]</a></td><td><a class="reference external" href="http://www.microsoft.com/en-us/download/details.aspx?id=34595">http://www.microsoft.com/en-us/download/details.aspx?id=34595</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="murano-agent-link" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id7">[8]</a></td><td><a class="reference external" href="https://www.dropbox.com/sh/zthldcxnp6r4flm/AADh6LkVkcw2j8nKZevqedHja/MuranoAgent.zip">https://www.dropbox.com/sh/zthldcxnp6r4flm/AADh6LkVkcw2j8nKZevqedHja/MuranoAgent.zip</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="msysgit-link" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id8">[9]</a></td><td><a class="reference external" href="https://msysgit.googlecode.com/files/Git-1.8.3-preview20130601.exe">https://msysgit.googlecode.com/files/Git-1.8.3-preview20130601.exe</a></td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="optional-components">
+<span id="optional-prerequisites"></span><h3>Optional Components<a class="headerlink" href="#optional-components" title="Permalink to this headline">¶</a></h3>
+<p>These components are not mandatory for Murano Agent to function properly.
+However, they may help you work with the image after deployment.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="30%" />
+<col width="70%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Component</th>
+<th class="head">Save to</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Far Manager <a class="footnote-reference" href="#far-manager-link" id="id9">[10]</a></td>
+<td>/opt/image-builder/share/files/Far30b3367.x64.20130717.msi</td>
+</tr>
+<tr class="row-odd"><td>Sysinternals Suite <a class="footnote-reference" href="#sysinternals-link" id="id10">[11]</a></td>
+<td>/opt/image-builder/share/files/SysinternalsSuite.zip</td>
+</tr>
+<tr class="row-even"><td>unzip.exe <a class="footnote-reference" href="#unzip-link" id="id11">[12]</a></td>
+<td>/opt/image-builder/share/files/unzip.exe</td>
+</tr>
+<tr class="row-odd"><td>.NET 4.5 <a class="footnote-reference" href="#dot-net-45-link" id="id12">[13]</a></td>
+<td>/opt/image-builder/share/files/dotNetFx45_Full_setup.exe</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<table class="docutils footnote" frame="void" id="far-manager-link" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id9">[10]</a></td><td><a class="reference external" href="http://www.farmanager.com/files/Far30b3525.x64.20130717.msi">http://www.farmanager.com/files/Far30b3525.x64.20130717.msi</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="sysinternals-link" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id10">[11]</a></td><td><a class="reference external" href="http://download.sysinternals.com/files/SysinternalsSuite.zip">http://download.sysinternals.com/files/SysinternalsSuite.zip</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="unzip-link" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id11">[12]</a></td><td><a class="reference external" href="https://www.dropbox.com/sh/zthldcxnp6r4flm/AACwiyfcrlGDt3ygCFHrbwMra/unzip.exe">https://www.dropbox.com/sh/zthldcxnp6r4flm/AACwiyfcrlGDt3ygCFHrbwMra/unzip.exe</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="dot-net-45-link" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id12">[13]</a></td><td><a class="reference external" href="http://www.microsoft.com/en-us/download/details.aspx?id=30653">http://www.microsoft.com/en-us/download/details.aspx?id=30653</a></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="additional-tools">
+<h2>Additional Tools<a class="headerlink" href="#additional-tools" title="Permalink to this headline">¶</a></h2>
+<p>Tools from this section are not necessary to build an image.
+However, they may be helpful if you want to create an image with different configuration.</p>
+<div class="section" id="windows-assessment-and-deployment-kit-adk">
+<h3>Windows Assessment and Deployment Kit (ADK)<a class="headerlink" href="#windows-assessment-and-deployment-kit-adk" title="Permalink to this headline">¶</a></h3>
+<p><em>Windows ADK</em> is required if you want to build your own answer files for auto unattended Windows installation.</p>
+<p>Download it from <a class="reference external" href="http://www.microsoft.com/en-us/download/details.aspx?id=30652">http://www.microsoft.com/en-us/download/details.aspx?id=30652</a></p>
+</div>
+<div class="section" id="floppy-image-with-unattended-file">
+<h3>Floppy Image With Unattended File<a class="headerlink" href="#floppy-image-with-unattended-file" title="Permalink to this headline">¶</a></h3>
+<p>Floppy image with answer file for unattended installation is needed to automate Windows installation process.</p>
+<ul>
+<li><p class="first">Create emtpy floppy image in your home folder</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> mkdir ~/flp/files
+<span class="gp">$</span> mkdir ~/flp/mnt
+</pre></div>
+</div>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> dd <span class="nv">bs</span><span class="o">=</span><span class="m">512</span> <span class="nv">count</span><span class="o">=</span><span class="m">2880</span> <span class="k">if</span><span class="o">=</span>/dev/zero <span class="nv">of</span><span class="o">=</span>~/flp/floppy.img
+<span class="gp">$</span> mkfs.msdos ~/flp/floppy.img
+</pre></div>
+</div>
+</li>
+<li><p class="first">Mount the image</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> mkdir ~/flp/mnt
+<span class="gp">$</span> sudo mount -o loop ~/floppy.img ~/flp/mnt
+</pre></div>
+</div>
+</li>
+<li><p class="first">Download <strong>autounattend.xml.template</strong> file from <a class="reference external" href="https://github.com/openstack/murano-deployment/tree/master/contrib/windows/image-builder/share/files">https://github.com/openstack/murano-deployment/tree/master/contrib/windows/image-builder/share/files</a></p>
+<p>This folder contains unatteded files for several Windows versions, choose one that matches your Windows version.</p>
+</li>
+<li><p class="first">Copy that file to mounted floppy image</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> cp ~/autounattend.xml.template ~/flp/mnt/autounattend.xml
+</pre></div>
+</div>
+</li>
+<li><p class="first">Replace string <strong>%_IMAGE_BUILDER_IP_%</strong> in that file with <strong>192.168.122.1</strong></p>
+</li>
+<li><p class="first">Unmount the image</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> sudo umount ~/flp/mnt
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="build-windows-image-with-murano">
+<h2>Build Windows Image with Murano<a class="headerlink" href="#build-windows-image-with-murano" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="build-windows-image-using-image-builder-script">
+<span id="build-image-using-image-builder-scripts"></span><h3>Build Windows Image Using Image Builder Script<a class="headerlink" href="#build-windows-image-using-image-builder-script" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first">Clone <strong>murano-deployment</strong> repository</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> git clone git://git.openstack.org/cgit/openstack/murano-deployment.git
+</pre></div>
+</div>
+</li>
+<li><p class="first">Change directory to image-builder folder</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> <span class="nb">cd </span>murano-deployment/contrib/windows/image-builder
+</pre></div>
+</div>
+</li>
+<li><p class="first">Create folder structure for image builder</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> sudo make build-root
+</pre></div>
+</div>
+</li>
+<li><p class="first">Download build prerequisites, and copy them to correct folders</p>
+<ul class="simple">
+<li><a class="reference internal" href="#windows-installation-iso"><em>Windows Server Installation ISO</em></a></li>
+<li><a class="reference internal" href="#required-prerequisites"><em>Required Components</em></a></li>
+<li><a class="reference internal" href="#optional-prerequisites"><em>Optional Components</em></a> (Optional)</li>
+</ul>
+</li>
+<li><p class="first">Test that all required files are in place</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> sudo make <span class="nb">test</span>-build-files
+</pre></div>
+</div>
+</li>
+<li><p class="first">Get list of available images</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> make
+</pre></div>
+</div>
+</li>
+<li><p class="first">Run image build process (e.g. to build Windows Server 2012)</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> sudo make ws-2012-std
+</pre></div>
+</div>
+</li>
+<li><p class="first">Wait until process finishes</p>
+</li>
+<li><p class="first">The image file <strong>ws-2012-std.qcow2</strong> should be stored inside <strong>/opt/image-builder/share/images</strong> folder.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="build-windows-image-manualy">
+<h3>Build Windows Image Manualy<a class="headerlink" href="#build-windows-image-manualy" title="Permalink to this headline">¶</a></h3>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Please note that the preferred way to build images is to use Image Builder scripts, see <a class="reference internal" href="#build-image-using-image-builder-scripts"><em>Build Windows Image Using Image Builder Script</em></a></p>
+</div>
+</div>
+<div class="section" id="get-post-install-scripts">
+<h3>Get Post-Install Scripts<a class="headerlink" href="#get-post-install-scripts" title="Permalink to this headline">¶</a></h3>
+<p>There are a few scripts which perform all the required post-installation tasks.</p>
+<p>They all are located in <a class="reference external" href="http://git.openstack.org/cgit/openstack/murano-deployment/tree/contrib/windows/image-builder/share/scripts">http://git.openstack.org/cgit/openstack/murano-deployment/tree/contrib/windows/image-builder/share/scripts</a></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">There are subfolders for each supported Windows Version.
+Choose one that matches Windows Version you are building.</p>
+</div>
+<p>This folder contains several scripts</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="80%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Script Name</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>wpi.ps1</td>
+<td>Handles component installation and system configuration tasks</td>
+</tr>
+<tr class="row-odd"><td>Start-Sysprep.ps1</td>
+<td>Prepares system to be syspreped (cleans log files, stops some services and so on), and starts sysprep</td>
+</tr>
+<tr class="row-even"><td>Start-AtFirstBoot.ps1</td>
+<td>Performes basic after-installation tasks</td>
+</tr>
+</tbody>
+</table>
+<p>Download these scripts and save them into /opt/image-builder/share/scripts</p>
+</div>
+<div class="section" id="create-a-vm">
+<h3>Create a VM<a class="headerlink" href="#create-a-vm" title="Permalink to this headline">¶</a></h3>
+<p>Now you need a virtual machine instance. There are two possible ways to create it - using CLI or GUI tools. We describe both in this section.</p>
+<div class="section" id="using-cli-tools">
+<h4>Using CLI Tools<a class="headerlink" href="#using-cli-tools" title="Permalink to this headline">¶</a></h4>
+<ol class="arabic simple">
+<li>Preallocate disk image</li>
+</ol>
+<blockquote>
+<div><div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> qemu-img create -f raw /var/lib/libvirt/images/ws-2012.img 40G
+</pre></div>
+</div>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li>Start the VM</li>
+</ol>
+<blockquote>
+<div><div class="highlight-console"><div class="highlight"><pre><span class="gp">#</span> virt-install --connect qemu:///system --hvm --name WinServ <span class="se">\</span>
+<span class="gp">&gt;</span> --ram <span class="m">2048</span> --vcpus <span class="m">2</span> --cdrom /opt/samba/share/9200.16384.WIN8_RTM<span class="se">\</span>
+<span class="gp">&gt;</span>.120725-1247_X64FRE_SERVER_EVAL_EN-US-HRM_SSS_X64FREE_EN-US_DV5.ISO <span class="se">\</span>
+<span class="gp">&gt;</span> --disk <span class="nv">path</span><span class="o">=</span>/opt/samba/share/virtio-win-0.1-52.iso,device<span class="o">=</span>cdrom <span class="se">\</span>
+<span class="gp">&gt;</span> --disk <span class="nv">path</span><span class="o">=</span>/opt/samba/share/floppy.img,device<span class="o">=</span>floppy <span class="se">\</span>
+<span class="gp">&gt;</span> --disk <span class="nv">path</span><span class="o">=</span>/var/lib/libvirt/images/ws-2012.qcow2<span class="se">\</span>
+<span class="gp">&gt;</span>,format<span class="o">=</span>qcow2,bus<span class="o">=</span>virtio,cache<span class="o">=</span>none <span class="se">\</span>
+<span class="gp">&gt;</span> --network <span class="nv">network</span><span class="o">=</span>default,model<span class="o">=</span>virtio <span class="se">\</span>
+<span class="gp">&gt;</span> --memballoon <span class="nv">model</span><span class="o">=</span>virtio --vnc --os-type<span class="o">=</span>windows <span class="se">\</span>
+<span class="gp">&gt;</span> --os-variant<span class="o">=</span>win2k8 --noautoconsole <span class="se">\</span>
+<span class="gp">&gt;</span> --accelerate --noapic --keymap<span class="o">=</span>en-us --video<span class="o">=</span>cirrus --force
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="using-virt-manager-ui">
+<h4>Using virt-manager UI<a class="headerlink" href="#using-virt-manager-ui" title="Permalink to this headline">¶</a></h4>
+<ol class="arabic simple">
+<li>Launch <em>virt-manager</em> from shell as root</li>
+<li>Set a name for VM and select Local install media</li>
+<li>Add one cdrom and attach Windows Server ISO image to it</li>
+<li>Select OS type <strong>Windows</strong></li>
+<li>Set CPU and RAM amount</li>
+<li>Deselect option <strong>Enable storage for this virtual machine</strong></li>
+<li>Add second cdrom for ISO image with virtio drivers</li>
+<li>Add a floppy drive and attach our floppy image to it</li>
+<li>Add (or create new) HDD image with Disk bus <strong>VirtIO</strong> and storage format <strong>RAW</strong></li>
+<li>Set network device model <strong>VirtIO</strong></li>
+<li>Start installation process and open guest vm screen through <strong>Console</strong> button</li>
+</ol>
+</div>
+</div>
+<div class="section" id="install-os">
+<h3>Install OS<a class="headerlink" href="#install-os" title="Permalink to this headline">¶</a></h3>
+<p>Launch your virtual machine, connect to its virtual console and complete OS installation. At the end of this step you should have Windows Server system that you are able to log into.</p>
+</div>
+<div class="section" id="install-prerequisites-and-murano">
+<h3>Install Prerequisites and Murano<a class="headerlink" href="#install-prerequisites-and-murano" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first">Create folders where Murano components will be installed</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="80%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Path</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>C:\Murano</td>
+<td>Root directory for Murano</td>
+</tr>
+<tr class="row-odd"><td>C:\Murano\Agent</td>
+<td>Murano Agent installation directory</td>
+</tr>
+<tr class="row-even"><td>C:\Murano\Modules</td>
+<td>PowerShell modules required by Murano</td>
+</tr>
+<tr class="row-odd"><td>C:\Murano\Scripts</td>
+<td>PowerShell scrtips and other files required by Murano</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p class="first">Open <strong>Explorer</strong> and navigate to <strong>\192.168.122.1share</strong> <strong>192.168.122.1</strong> is an IP address of KVM hypervisor assigned by default.</p>
+</li>
+<li><p class="first">Copy Murano Agent files into C:MuranoAgent</p>
+</li>
+<li><p class="first">Copy CoreFunctions directory (entire directory!) into C:MuranoModules</p>
+</li>
+<li><p class="first">Install .NET 4.0</p>
+</li>
+<li><p class="first">Register Murano Agent</p>
+<div class="highlight-cmd"><div class="highlight"><pre>&gt; cd C:\Murano\Agent
+&gt; .\WindowsMuranoAgent.exe /install
+</pre></div>
+</div>
+</li>
+<li><p class="first">Change PowerShell execution policy to less restricted</p>
+<div class="highlight-powershell"><div class="highlight"><pre><span class="nb">Set-ExecutionPolicy</span> <span class="n">RemoteSigned</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Register CoreFunctions modules</p>
+<div class="highlight-powershell"><div class="highlight"><pre>Import-Module C:\Murano\Modules\CoreFunctions\CoreFunctions.psm1 -ArgumentList register
+</pre></div>
+</div>
+</li>
+<li><p class="first">Install CloudInit</p>
+</li>
+<li><p class="first">Run Sysprep</p>
+<div class="highlight-powershell"><div class="highlight"><pre>C:\Murano\Scripts\Start-Sysprep.ps1 -BatchExecution
+</pre></div>
+</div>
+</li>
+<li><p class="first">Wait until sysprep phase finishes and system powers off.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="convert-the-image-from-raw-to-qcow2-format">
+<h3>Convert the image from RAW to QCOW2 format<a class="headerlink" href="#convert-the-image-from-raw-to-qcow2-format" title="Permalink to this headline">¶</a></h3>
+<p>The image must be converted from RAW format to QCOW2 before being imported into Glance.</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">#</span> qemu-img convert -O qcow2 /var/lib/libvirt/images/ws-2012.raw <span class="se">\</span>
+<span class="gp">&gt;</span> /var/lib/libvirt/images/ws-2012-ref.qcow2
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Windows Image</a><ul>
+<li><a class="reference internal" href="#prepare-image-builder-host">Prepare Image Builder Host</a><ul>
+<li><a class="reference internal" href="#install-kvm">Install KVM</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configure-shared-resource">Configure Shared Resource</a></li>
+<li><a class="reference internal" href="#download-prerequisites">Download Prerequisites</a><ul>
+<li><a class="reference internal" href="#windows-server-installation-iso">Windows Server Installation ISO</a></li>
+<li><a class="reference internal" href="#required-components">Required Components</a></li>
+<li><a class="reference internal" href="#optional-components">Optional Components</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#additional-tools">Additional Tools</a><ul>
+<li><a class="reference internal" href="#windows-assessment-and-deployment-kit-adk">Windows Assessment and Deployment Kit (ADK)</a></li>
+<li><a class="reference internal" href="#floppy-image-with-unattended-file">Floppy Image With Unattended File</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#build-windows-image-with-murano">Build Windows Image with Murano</a><ul>
+<li><a class="reference internal" href="#build-windows-image-using-image-builder-script">Build Windows Image Using Image Builder Script</a></li>
+<li><a class="reference internal" href="#build-windows-image-manualy">Build Windows Image Manualy</a></li>
+<li><a class="reference internal" href="#get-post-install-scripts">Get Post-Install Scripts</a></li>
+<li><a class="reference internal" href="#create-a-vm">Create a VM</a><ul>
+<li><a class="reference internal" href="#using-cli-tools">Using CLI Tools</a></li>
+<li><a class="reference internal" href="#using-virt-manager-ui">Using virt-manager UI</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#install-os">Install OS</a></li>
+<li><a class="reference internal" href="#install-prerequisites-and-murano">Install Prerequisites and Murano</a></li>
+<li><a class="reference internal" href="#convert-the-image-from-raw-to-qcow2-format">Convert the image from RAW to QCOW2 format</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="index.html"
+                                  title="previous chapter">Building Murano Image</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="linux.html"
+                                  title="next chapter">Linux Image</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/image_builders/windows.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="linux.html" title="Linux Image"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Building Murano Image"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Murano</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Building Murano Image</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Wed Apr 29 17:52:18 2015, commit 9c804c9.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Murano Policy Enforcement Example &mdash; Murano</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.0.dev20',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Murano" href="../index.html" />
+    <link rel="up" title="Murano Policy Enforcement" href="policy_enf_index.html" />
+    <link rel="next" title="Murano Policy Enforcement Setup Guide" href="policy_enf_setup.html" />
+    <link rel="prev" title="Murano Policy Enforcement" href="policy_enf_index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="murano-policy-enforcement-example">
+<h1>Murano Policy Enforcement Example<a class="headerlink" href="#murano-policy-enforcement-example" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>As a part of the policy guided fulfillment, we need to enforce policies on the Murano environment deployment.
+If the policy enforcement failed, deployment fails. Policies are defined and evaluated in the <a class="reference external" href="https://wiki.openstack.org/wiki/Congress">Congress</a> project.
+The policy language for Congress is Datalog. The congress policy consists of Datalog rules and facts.
+The cloud administrator defines policies in Congress. Examples of such policies:</p>
+<ul class="simple">
+<li>all VM instances must have at least 2GB of RAM</li>
+<li>all Apache server instances must have given certified version</li>
+<li>data placement policy: all DB instances must be deployed at given geo location (enforcing some law restriction on data placement)</li>
+</ul>
+<p>These policies are evaluated over data in the form of tables (Congress data structures). A deployed Murano environment must be
+decomposed to Congress data structures. The decomposed environment is sent to congress for simulation. Congress simulates
+whether the resulting state does not violate any defined policy. Deployment is aborted in case of policy violation.
+Murano uses two predefined policies in Congress:</p>
+<ul class="simple">
+<li><em>murano_system</em> contains rules and facts of policies defined by cloud admin.</li>
+<li><em>murano</em> contains only facts/records reflecting resulting state after deployment of an environment.</li>
+</ul>
+<p>Records in the <em>murano</em> policy are queried by rules from the <em>murano_system</em> policy. The congress simulation does not create any
+records in the <em>murano</em> policy. Congress will only give feedback on whether the resulting state violates the policy or not.</p>
+</div>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<p>In this example we will create rules that prohibit creating VM instances with flavor with more than 2048 MB ram.</p>
+<p>Prior creating rules your OpenStack installation has to be configured as described in <a class="reference internal" href="policy_enf_setup.html#policyenf-setup"><em>Introduction</em></a>.</p>
+<div class="section" id="example-rules">
+<h3>Example rules<a class="headerlink" href="#example-rules" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic">
+<li><p class="first">Create <tt class="docutils literal"><span class="pre">predeploy_errors</span></tt> rule</p>
+<blockquote>
+<div><p>Policy validation engine checks rule <tt class="docutils literal"><span class="pre">predeploy_errors</span></tt> and rules referenced inside this rule are evaluated by congress engine.</p>
+<p>We create example rule which references <tt class="docutils literal"><span class="pre">flavor_ram</span></tt> rule we create afterwards. It disables flavors with ram higher than 2048 MB and constructs message returned to the user in <em>msg</em> variable.</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">predeploy_errors(eid, obj_id, msg) :-</span>
+<span class="go">   murano:objects(obj_id, pid, type),</span>
+<span class="go">   murano:objects(eid, tid, &quot;io.murano.Environment&quot;),</span>
+<span class="go">   murano:connected(eid, pid),</span>
+<span class="go">   murano:properties(obj_id, &quot;flavor&quot;, flavor_name),</span>
+<span class="go">   flavor_ram(flavor_name, ram),</span>
+<span class="go">   gt(ram, 2048),</span>
+<span class="go">   murano:properties(obj_id, &quot;name&quot;, obj_name),</span>
+<span class="go">   concat(obj_name, &quot;: instance flavor has RAM size over 2048MB&quot;, msg)</span>
+</pre></div>
+</div>
+<p>Use this command to create the rule:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">congress policy rule create murano_system &quot;predeploy_errors(eid, obj_id, msg) :- murano:objects(obj_id, pid, type), murano:objects(eid, tid, \&quot;io.murano.Environment\&quot;), murano:connected(eid, pid), murano:properties(obj_id, \&quot;flavor\&quot;, flavor_name), flavor_ram(flavor_name, ram), gt(ram, 2048), murano:properties(obj_id, \&quot;name\&quot;, obj_name), concat(obj_name, \&quot;: instance flavor has RAM size over 2048MB\&quot;, msg)&quot;</span>
+</pre></div>
+</div>
+<p>In this example we used data from policy <strong>murano</strong> which is represented by <tt class="docutils literal"><span class="pre">murano:properties</span></tt>. There are stored rows with decomposition of model representing murano application. We also used built-in functions of congress - <tt class="docutils literal"><span class="pre">gt</span></tt> - greater-than, and <tt class="docutils literal"><span class="pre">concat</span></tt> which joins two strings into variable.</p>
+</div></blockquote>
+</li>
+<li><p class="first">Create <tt class="docutils literal"><span class="pre">flavor_ram</span></tt> rule</p>
+<blockquote>
+<div><p>We create the rule that resolves parameters of flavor by flavor name and returns <em>ram</em> parameter. It uses rule <em>flavors</em> from <em>nova</em> policy. Data in this policy is filled by <em>nova</em> datasource driver.</p>
+<p>Use this command to create the rule:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">congress policy rule create murano_system &quot;flavor_ram(flavor_name, ram) :- nova:flavors(id, flavor_name, cpus, ram)&quot;</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ol>
+</div>
+<div class="section" id="example-rules-in-murano-app-deployment">
+<h3>Example rules in murano app deployment<a class="headerlink" href="#example-rules-in-murano-app-deployment" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic">
+<li><p class="first">Create environment with simple application</p>
+<blockquote>
+<div><ul class="simple">
+<li>Choose Git application from murano applications</li>
+<li>Create with <strong>&#8220;m1.medium&#8221;</strong> instance flavor which uses 4096MB so validation will fail</li>
+</ul>
+<img alt="../_images/new-instance.png" src="../_images/new-instance.png" />
+</div></blockquote>
+</li>
+<li><p class="first">Deploy environment</p>
+<blockquote>
+<div><ul class="simple">
+<li>Environment is in Status: <strong>Deploy FAILURE</strong></li>
+<li>Check deployment log:</li>
+</ul>
+<img alt="../_images/deployment-log.png" src="../_images/deployment-log.png" />
+</div></blockquote>
+</li>
+</ol>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Murano Policy Enforcement Example</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#example">Example</a><ul>
+<li><a class="reference internal" href="#example-rules">Example rules</a></li>
+<li><a class="reference internal" href="#example-rules-in-murano-app-deployment">Example rules in murano app deployment</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="policy_enf_index.html"
+                                  title="previous chapter">Murano Policy Enforcement</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="policy_enf_setup.html"
+                                  title="next chapter">Murano Policy Enforcement Setup Guide</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/articles/policy_enf.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="policy_enf_setup.html" title="Murano Policy Enforcement Setup Guide"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="policy_enf_index.html" title="Murano Policy Enforcement"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Murano</a> &raquo;</li>
+          <li><a href="policy_enf_index.html" accesskey="U">Murano Policy Enforcement</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Wed Apr 29 17:52:18 2015, commit 9c804c9.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Murano Automated Tests Description &mdash; Murano</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.0.dev20',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Murano" href="../index.html" />
+    <link rel="next" title="Murano client" href="client.html" />
+    <link rel="prev" title="Upload Image Into Glance" href="../image_builders/upload.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="murano-automated-tests-description">
+<h1>Murano Automated Tests Description<a class="headerlink" href="#murano-automated-tests-description" title="Permalink to this headline">¶</a></h1>
+<p>This page describes automated tests for a Murano project:</p>
+<ul class="simple">
+<li>where tests are located</li>
+<li>how they are run</li>
+<li>how execute tests on a local machine</li>
+<li>how to find the the root of problems with FAILed tests</li>
+</ul>
+<div class="section" id="murano-continuous-integration-service">
+<h2>Murano Continuous Integration Service<a class="headerlink" href="#murano-continuous-integration-service" title="Permalink to this headline">¶</a></h2>
+<p>Murano project has separate CI server, which runs tests for all commits and verifies that new code does not break anything.</p>
+<p>Murano CI uses OpenStack QA cloud for testing infrastructure.</p>
+<p>Murano CI url: <a class="reference external" href="https://murano-ci.mirantis.com/jenkins/">https://murano-ci.mirantis.com/jenkins/</a> Anyone can login to that server, using launchpad credentials.</p>
+<p>There you can find each job for each repository: one for the <strong>murano</strong> and another one for <strong>murano-dashboard</strong>.</p>
+<ul class="simple">
+<li>&#8220;gate-murano-dashboard-selenium*&#8221; verifies each commit to murano-dashboard repository</li>
+<li>&#8220;gate-murano-integration*&#8221; verifies each commit to murano repository</li>
+</ul>
+<p>Other jobs allow to build and test Murano documentation and perform another usefull work to support Murano CI infrastructure.
+All jobs are run on fresh installation of operation system and all components are installed on each run.</p>
+</div>
+<div class="section" id="murano-automated-tests-ui-tests">
+<h2>Murano Automated Tests: UI Tests<a class="headerlink" href="#murano-automated-tests-ui-tests" title="Permalink to this headline">¶</a></h2>
+<p>Murano project has a Web User Interface and all possible user scenarios should be tested.
+All UI tests are located at the <a class="reference external" href="https://git.openstack.org/cgit/openstack/murano-dashboard/tree/muranodashboard/tests/functional">https://git.openstack.org/cgit/openstack/murano-dashboard/tree/muranodashboard/tests/functional</a></p>
+<p>Automated tests for Murano Web UI are written in Python using special Selenium library. This library is used to automate web browser interaction from Python.
+For more information please visit <a class="reference external" href="https://selenium-python.readthedocs.org/">https://selenium-python.readthedocs.org/</a></p>
+<div class="section" id="prerequisites">
+<h3>Prerequisites:<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Install Python module, called nose performing one of the following commands <strong>easy_install nose</strong> or <strong>pip install nose</strong>
+This will install the nose libraries, as well as the nosetests script, which you can use to automatically discover and run tests.</li>
+<li>Install external Python libraries, which are required for Murano Web UI tests: <strong>testtools</strong> and <strong>selenium</strong></li>
+</ul>
+</div>
+<div class="section" id="download-and-run-tests">
+<h3>Download and run tests:<a class="headerlink" href="#download-and-run-tests" title="Permalink to this headline">¶</a></h3>
+<p>First of all make sure that all additional components are installed.</p>
+<ul class="simple">
+<li>Clone murano-dashboard git repository:<ul>
+<li>git clone git://git.openstack.org/openstack/murano-dashboard*</li>
+</ul>
+</li>
+<li>Change default settings:<ul>
+<li>Copy muranodashboard/tests/functional/config/config.conf.example to config.conf</li>
+<li>Set appropriate urls and credentials for your OpenStack lab. Only admin users are appropriate.</li>
+</ul>
+</li>
+</ul>
+<div class="highlight-python"><div class="highlight"><pre>[murano]
+
+horizon_url = http://localhost/horizon
+murano_url = http://localhost:8082
+user = ***
+password = ***
+tenant = ***
+keystone_url = http://localhost:5000/v2.0/
+</pre></div>
+</div>
+<p>All tests are kept in <em>sanity_check.py</em> and divided into 5 test suites:</p>
+<blockquote>
+<div><ul class="simple">
+<li>TestSuiteSmoke - verification of Murano panels; check, that could be open without errors.</li>
+<li>TestSuiteEnvironment - verification of all operations with environment are finished successfully.</li>
+<li>TestSuiteImage - verification of operations with images.</li>
+<li>TestSuiteFields - verification of custom fields validators.</li>
+<li>TestSuitePackages - verification of operations with Murano packages.</li>
+<li>TestSuiteApplications - verification of Application Catalog page and of application creation process.</li>
+</ul>
+</div></blockquote>
+<p>To specify which tests/suite to run, pass test/suite names on the command line:</p>
+<blockquote>
+<div><ul class="simple">
+<li>to run all tests: <tt class="docutils literal"><span class="pre">nosetests</span> <span class="pre">sanity_check.p</span></tt></li>
+<li>to run a single suite: <tt class="docutils literal"><span class="pre">nosetests</span> <span class="pre">sanity_check.py:&lt;test</span> <span class="pre">suite</span> <span class="pre">name&gt;</span></tt></li>
+<li>to run a single test: <tt class="docutils literal"><span class="pre">nosetests</span> <span class="pre">sanity_check.py:&lt;test</span> <span class="pre">suite</span> <span class="pre">name&gt;.&lt;test</span> <span class="pre">name&gt;</span></tt></li>
+</ul>
+</div></blockquote>
+<p>In case of SUCCESS execution, you should see something like this:</p>
+<div class="highlight-python"><div class="highlight"><pre>.........................
+
+Ran 34 tests in 1.440s
+
+OK
+</pre></div>
+</div>
+<p>In case of FAILURE, folder with screenshots of the last operation of tests that finished with errors would be created.
+It&#8217;s located in <em>muranodashboard/tests/functional</em> folder.</p>
+<p>There are also a number of command line options that can be used to control the test execution and generated outputs. For more details about <em>nosetests</em>, try:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ nosetests -h
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="murano-automated-tests-tempest-tests">
+<h2>Murano Automated Tests: Tempest Tests<a class="headerlink" href="#murano-automated-tests-tempest-tests" title="Permalink to this headline">¶</a></h2>
+<p>All Murano services have tempest-based automated tests, which allow to verify API interfaces and deployment scenarious.</p>
+<p>Tempest tests for Murano are located at the: <a class="reference external" href="https://git.openstack.org/cgit/openstack/murano/tree/murano/tests/functional">https://git.openstack.org/cgit/openstack/murano/tree/murano/tests/functional</a></p>
+<p>The following Python files are contain basic tests suites for different Murano components.</p>
+<div class="section" id="api-tests">
+<h3>API Tests<a class="headerlink" href="#api-tests" title="Permalink to this headline">¶</a></h3>
+<p>Murano API tests are run on devstack gate and located at <a class="reference external" href="https://git.openstack.org/cgit/openstack/murano/tree/murano/tests/functional/api">https://git.openstack.org/cgit/openstack/murano/tree/murano/tests/functional/api</a></p>
+<ul class="simple">
+<li><em>test_murano_envs.py</em> contains test suite with actions on murano&#8217;s environments(create, delete, get and etc.)</li>
+<li><em>test_murano_sessions.py</em> contains test suite with actions on murano&#8217;s sessions(create, delete, get and etc.)</li>
+<li><em>test_murano_services.py</em> contains test suite with actions on murano&#8217;s services(create, delete, get and etc.)</li>
+<li><em>test_murano_repository.py</em> contains test suite with actions on murano&#8217;s package repository</li>
+</ul>
+</div>
+<div class="section" id="engine-tests">
+<h3>Engine Tests<a class="headerlink" href="#engine-tests" title="Permalink to this headline">¶</a></h3>
+<p>Murano Engine Tests are run on murano-ci : <a class="reference external" href="https://git.openstack.org/cgit/openstack/murano/tree/murano/tests/functional/engine">https://git.openstack.org/cgit/openstack/murano/tree/murano/tests/functional/engine</a></p>
+<ul class="simple">
+<li><em>base.py</em> contains base test class and tests with actions on deploy Murano services such as &#8216;Telnet&#8217; and &#8216;Apache&#8217;.</li>
+</ul>
+</div>
+<div class="section" id="command-line-tests">
+<h3>Command Line Tests<a class="headerlink" href="#command-line-tests" title="Permalink to this headline">¶</a></h3>
+<p>Murano CLI tests case are currently in the middle of creation. The current scope is read only operations on a cloud that are hard to test via unit tests.</p>
+<p>All tests have description and execution steps in there docstrings.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Murano Automated Tests Description</a><ul>
+<li><a class="reference internal" href="#murano-continuous-integration-service">Murano Continuous Integration Service</a></li>
+<li><a class="reference internal" href="#murano-automated-tests-ui-tests">Murano Automated Tests: UI Tests</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites:</a></li>
+<li><a class="reference internal" href="#download-and-run-tests">Download and run tests:</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#murano-automated-tests-tempest-tests">Murano Automated Tests: Tempest Tests</a><ul>
+<li><a class="reference internal" href="#api-tests">API Tests</a></li>
+<li><a class="reference internal" href="#engine-tests">Engine Tests</a></li>
+<li><a class="reference internal" href="#command-line-tests">Command Line Tests</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="../image_builders/upload.html"
+                                  title="previous chapter">Upload Image Into Glance</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="client.html"
+                                  title="next chapter">Murano client</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/articles/test_docs.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="client.html" title="Murano client"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../image_builders/upload.html" title="Upload Image Into Glance"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Murano</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Wed Apr 29 17:52:18 2015, commit 9c804c9.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

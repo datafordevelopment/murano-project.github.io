@@ -1,0 +1,340 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Dynamic UI Definition specification &mdash; Murano</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.0.dev20',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Murano" href="../index.html" />
+    <link rel="next" title="Murano workflow" href="workflow.html" />
+    <link rel="prev" title="YAML" href="../murano_pl/murano_pl.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="dynamic-ui-definition-specification">
+<span id="dynamicuispec"></span><h1>Dynamic UI Definition specification<a class="headerlink" href="#dynamic-ui-definition-specification" title="Permalink to this headline">¶</a></h1>
+<p>The main purpose of Dynamic UI is to generate application creation
+forms &#8220;on-the-fly&#8221;.  Murano dashboard doesn&#8217;t know anything about what
+applications can be deployed and which web form are needed to create
+application instance.  So all application definitions should contain a
+yaml file which tells dashboard how to create an application and what
+validations are to be applied.  This document will help you to compose
+a valid UI definition for your application.</p>
+<div class="section" id="structure">
+<h2>Structure<a class="headerlink" href="#structure" title="Permalink to this headline">¶</a></h2>
+<p>UI definition should be a valid yaml file and should contain the following sections (for version 2):</p>
+<ul class="simple">
+<li><strong>Version</strong> - points out to which syntax version is used, optional</li>
+<li><strong>Templates</strong> - optional, auxiliary section, used together with an Application section, optional</li>
+<li><strong>Application</strong> - object model description which will be used for application deployment, required</li>
+<li><strong>Forms</strong> - web form definitions, required</li>
+</ul>
+</div>
+<div class="section" id="version">
+<h2>Version<a class="headerlink" href="#version" title="Permalink to this headline">¶</a></h2>
+<p>Version of supported dynamic UI syntax. The latest version is 2.
+This is optional section, default version is set to 1.
+Version mapping:
+Murano 0.4 - version 1
+Murano 0.5 - version 2</p>
+</div>
+<div class="section" id="application-and-templates">
+<h2>Application and Templates<a class="headerlink" href="#application-and-templates" title="Permalink to this headline">¶</a></h2>
+<p>In the Application section an <em>application object model</em> is
+described. This model will be translated into json and according to
+that json application will be deployed. Application section should
+contain all necessary keys that are required by murano-engine to
+deploy an application. Note that under <em>?</em> section goes system part
+of the model. You can pick parameters you got from the user (they
+should be described in the Forms section) and pick the right place
+where they should be set. To do this <a class="reference external" href="https://github.com/ativelkov/yaql/blob/master/README.md">YAQL</a> is
+used. All lines are going to be checked for a yaql
+expressions. Currently, 2 yaql functions are provided for object model
+generation:</p>
+<ul class="simple">
+<li><strong>generateHostname</strong> is used for machine hostname generation; it accepts 2 arguments: name pattern (string) and index (integer). If &#8216;#&#8217; symbol is present in name pattern, it will be replaced with the index provided. If pattern is not given, a random name will be generated.</li>
+<li><strong>repeat</strong> is used to produce a list of data snippets, given the template snippet (first argument) and number of times it should be reproduced (second argument). Inside that template snippet current step can be referenced as <em>$index</em>.</li>
+</ul>
+<p>Note that while evaluating YAQL expressions referenced from
+<strong>Application</strong> section (as well as almost all attributes inside
+<strong>Forms</strong> section, see later) <em>$</em> root object is set to the list of
+dictionaries with cleaned forms&#8217; data. So to obtain cleaned value of
+e.g. field <em>name</em> of form <em>appConfiguration</em> , you should reference it
+as <em>$.appConfiguration.name</em>. This context will be called as
+<strong>standard context</strong> throughout the text.</p>
+<p><em>Example:</em></p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">Templates</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">primaryController</span><span class="p-Indicator">:</span>
+     <span class="l-Scalar-Plain">?</span><span class="p-Indicator">:</span>
+       <span class="l-Scalar-Plain">type</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano.windows.activeDirectory.PrimaryController</span>
+     <span class="l-Scalar-Plain">host</span><span class="p-Indicator">:</span>
+       <span class="l-Scalar-Plain">?</span><span class="p-Indicator">:</span>
+         <span class="l-Scalar-Plain">type</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano.windows.Host</span>
+       <span class="l-Scalar-Plain">adminPassword</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.serviceConfiguration.adminPassword</span>
+       <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">generateHostname($.serviceConfiguration.unitNamingPattern, 1)</span>
+       <span class="l-Scalar-Plain">flavor</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.instanceConfiguration.flavor</span>
+       <span class="l-Scalar-Plain">image</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.instanceConfiguration.osImage</span>
+
+  <span class="-Error"> </span><span class="l-Scalar-Plain">secondaryController</span><span class="p-Indicator">:</span>
+     <span class="l-Scalar-Plain">?</span><span class="p-Indicator">:</span>
+       <span class="l-Scalar-Plain">type</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano.windows.activeDirectory.SecondaryController</span>
+     <span class="l-Scalar-Plain">host</span><span class="p-Indicator">:</span>
+       <span class="l-Scalar-Plain">?</span><span class="p-Indicator">:</span>
+         <span class="l-Scalar-Plain">type</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano.windows.Host</span>
+       <span class="l-Scalar-Plain">adminPassword</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.serviceConfiguration.adminPassword</span>
+       <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">generateHostname($.serviceConfiguration.unitNamingPattern, $index + 1)</span>
+       <span class="l-Scalar-Plain">flavor</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.instanceConfiguration.flavor</span>
+       <span class="l-Scalar-Plain">image</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.instanceConfiguration.osImage</span>
+
+<span class="l-Scalar-Plain">Application</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">?</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">type</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano.windows.activeDirectory.ActiveDirectory</span>
+  <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.serviceConfiguration.name</span>
+  <span class="l-Scalar-Plain">primaryController</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$primaryController</span>
+  <span class="l-Scalar-Plain">secondaryControllers</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">repeat($secondaryController, $.serviceConfiguration.dcInstances - 1)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="forms">
+<h2>Forms<a class="headerlink" href="#forms" title="Permalink to this headline">¶</a></h2>
+<p>This section describes markup elements for defining forms (which are currently rendered and validated with Django). Each form has name, field definitions (mandatory) and validator definitions (optionally). Note that each form is splitted into 2 parts - input area (left side, where all the controls are located) and description area (right side, where descriptions of the controls are located).</p>
+<p>Each field should contain:</p>
+<ul class="simple">
+<li><strong>name</strong> -  system field name, could be any</li>
+<li><strong>type</strong> - system field type</li>
+</ul>
+<p>Currently supported options for <strong>type</strong> attribute are:</p>
+<ul class="simple">
+<li>string - text field (no inherent validations) with one-line text input</li>
+<li>boolean - boolean field, rendered as a checkbox</li>
+<li>text - same as string, but with a multi-line input</li>
+<li>integer - integer field with an appropriate validation, one-line text input</li>
+<li>password - text field with validation for strong password, rendered as two masked text inputs (second one is for password confirmation)</li>
+<li>clusterip - specific text field, used for entering cluster IP address (validations for valid IP address syntax and for that IP to belong to a fixed subnet)</li>
+<li>floatingip - specific boolean field, used for specifying whether or not an instance should have floating IP; <em>DEPRECATED FIELD</em> - use boolean field instead</li>
+<li>domain - specific field, used for selecting Active Directory domain from a list (or creating a new Active Directory application); <em>DEPRECATED FIELD</em> - use io.murano.windows.ActiveDirectory instead</li>
+<li>databaselist - Specific field, a list of databases (comma-separated list of databases&#8217; names, where each name has the following syntax first symbol should be latin letter or underscore; subsequent symbols can be latin letter, numeric, underscore, at the sign, number sign or dollar sign), rendered as one-line text input</li>
+<li>flavor - specific field, used for selection instance flavor from a list</li>
+<li>keypair - specific field, used for selecting keypair from a list</li>
+<li>image- specific field, used for selecting instance image from a list</li>
+<li>azone - specific field, used for selecting instance availability zone from a list</li>
+<li>any other value is considered to be a fully qualified name for some Application package and is rendered as a pair of controls: one for selecting already existing Applications of that type in an Environment, second - for creating a new Application of that type and selecting it</li>
+</ul>
+<p>Other arguments (and whether they are required or not) depends on
+field&#8217;s type and other attributes values. Among the most common
+attributes are:</p>
+<ul>
+<li><p class="first"><strong>label</strong> - name, that will be displayed in the form; defaults to <strong>name</strong> being capitalized.</p>
+</li>
+<li><p class="first"><strong>description</strong> - description, that will be displayed in the description area.
+Use yaml line folding character &gt;- to keep the correct formatting during data transferring.</p>
+</li>
+<li><p class="first"><strong>descriptionTitle</strong> - title of the description, defaults to <strong>label</strong>; displayed in the description area</p>
+</li>
+<li><p class="first"><strong>hidden</strong> whether field should be visible or not in the input area.
+Note that hidden field&#8217;s description will still be visible in the descriptions area (if given).
+Hidden fields are used storing some data to be used by other, visible fields.</p>
+</li>
+<li><p class="first"><strong>minLength</strong>, <strong>maxLength</strong> (for string fields) and <strong>minValue</strong>, <strong>maxValue</strong> (for integer fields) are transparently translated into django validation properties.</p>
+</li>
+<li><p class="first"><strong>validators</strong> is a list of dictionaries, each dictionary should at least have <em>expr</em> key, under that key either some <a class="reference external" href="https://github.com/stackforge/yaql/blob/master/README.rst">YAQL</a> expression is stored, either one-element dictionary with <em>regexpValidator</em> key (and some regexp string as value). Another possible key of a validator dictionary is <em>message</em>, and although it is not required, it is highly desirable to specify it - otherwise, when validator fails (i.e. regexp doesn&#8217;t match or YAQL expression evaluates to false) no message will be shown. Note that field-level validators use YAQL context different from all other attributes and section: here <em>$</em> root object is set to the value of field being validated (to make expressions shorter).</p>
+</li>
+<li><p class="first"><strong>widgetMedia</strong> sets some custom <em>CSS</em> and <em>JavaScript</em> used for the field&#8217;s widget rendering. Note, that files should be placed to Django static folder in advance.
+Mostly they are used to do some client-side field enabling/disabling, hiding/unhiding etc.
+This is a temporary field which will be dropped once Version 3 of Dynamic UI is implemented (since it will transparently translate YAQL expressions into the appropriate <em>JavaScript</em>).</p>
+</li>
+<li><p class="first"><strong>requirements</strong> is used only with flavor field and prevents user to pick unstable for a deployment flavor.
+It allows to set minimum ram (in MBs), disk space (in GBs) or virtual CPU quantity.</p>
+<p>Example that shows how to hide items, smaller than regular &#8216;small&#8217; flavor in flavor select field:</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">flavor</span>
+       <span class="l-Scalar-Plain">type</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">flavor</span>
+       <span class="l-Scalar-Plain">label</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Instance flavor</span>
+       <span class="l-Scalar-Plain">requirements</span><span class="p-Indicator">:</span>
+           <span class="l-Scalar-Plain">min_disk</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">20</span>
+           <span class="l-Scalar-Plain">min_vcpus</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">2</span>
+           <span class="l-Scalar-Plain">min_memory_mb</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">2048</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>Besides field-level validators form-level validators also exist. They
+use <strong>standard context</strong> for YAQL evaluation and are required when
+there is need to validate some form&#8217;s constraint across several
+fields.</p>
+<p><em>Example</em></p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">Forms</span><span class="p-Indicator">:</span>
+  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">serviceConfiguration</span><span class="p-Indicator">:</span>
+      <span class="l-Scalar-Plain">fields</span><span class="p-Indicator">:</span>
+        <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">name</span>
+          <span class="l-Scalar-Plain">type</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">string</span>
+          <span class="l-Scalar-Plain">label</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Service Name</span>
+          <span class="l-Scalar-Plain">description</span><span class="p-Indicator">:</span> <span class="p-Indicator">&gt;-</span>
+            <span class="no">To identify your service in logs please specify a service name</span>
+        <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">dcInstances</span>
+          <span class="l-Scalar-Plain">type</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">integer</span>
+          <span class="l-Scalar-Plain">hidden</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">true</span>
+          <span class="l-Scalar-Plain">initial</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">1</span>
+          <span class="l-Scalar-Plain">required</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">false</span>
+          <span class="l-Scalar-Plain">maxLength</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">15</span>
+          <span class="l-Scalar-Plain">helpText</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Optional field for a machine hostname template</span>
+        <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">unitNamingPattern</span>
+          <span class="l-Scalar-Plain">type</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">string</span>
+          <span class="l-Scalar-Plain">label</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Hostname template</span>
+          <span class="l-Scalar-Plain">description</span><span class="p-Indicator">:</span> <span class="p-Indicator">&gt;-</span>
+            <span class="no">For your convenience all instance hostnames can be named</span>
+            <span class="no">in the same way. Enter a name and use # character for incrementation.</span>
+            <span class="no">For example, host# turns into host1, host2, etc. Please follow Windows</span>
+            <span class="no">hostname restrictions.</span>
+          <span class="l-Scalar-Plain">required</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">false</span>
+          <span class="l-Scalar-Plain">regexpValidator</span><span class="p-Indicator">:</span> <span class="s">&#39;^(([a-zA-Z0-9#][a-zA-Z0-9-#]*[a-zA-Z0-9#])\.)*([A-Za-z0-9#]|[A-Za-z0-9#][A-Za-z0-9-#]*[A-Za-z0-9#])$&#39;</span>
+          <span class="c1"># FIXME: does not work for # turning into 2-digit numbers</span>
+          <span class="l-Scalar-Plain">maxLength</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">15</span>
+          <span class="l-Scalar-Plain">helpText</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Optional field for a machine hostname template</span>
+          <span class="c1"># temporaryHack</span>
+          <span class="l-Scalar-Plain">widgetMedia</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">js</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="s">&#39;muranodashboard/js/support_placeholder.js&#39;</span><span class="p-Indicator">]</span>
+            <span class="l-Scalar-Plain">css</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span><span class="nv">all</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="s">&#39;muranodashboard/css/support_placeholder.css&#39;</span><span class="p-Indicator">]}</span>
+      <span class="l-Scalar-Plain">validators</span><span class="p-Indicator">:</span>
+        <span class="c1"># if unitNamingPattern is given and dcInstances &gt; 1, then &#39;#&#39; should occur in unitNamingPattern</span>
+        <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">expr</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.serviceConfiguration.dcInstances &lt; 2 or not $.serviceConfiguration.unitNamingPattern.bool() or &#39;#&#39; in$.serviceConfiguration.unitNamingPattern</span>
+          <span class="l-Scalar-Plain">message</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Incrementation symbol &quot;#&quot; is required in the Hostname template</span>
+  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">instanceConfiguration</span><span class="p-Indicator">:</span>
+        <span class="l-Scalar-Plain">fields</span><span class="p-Indicator">:</span>
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">title</span>
+            <span class="l-Scalar-Plain">type</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">string</span>
+            <span class="l-Scalar-Plain">required</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">false</span>
+            <span class="l-Scalar-Plain">hidden</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">true</span>
+            <span class="l-Scalar-Plain">descriptionTitle</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Instance Configuration</span>
+            <span class="l-Scalar-Plain">description</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Specify some instance parameters on which service would be created.</span>
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">flavor</span>
+            <span class="l-Scalar-Plain">type</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">flavor</span>
+            <span class="l-Scalar-Plain">label</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Instance flavor</span>
+            <span class="l-Scalar-Plain">description</span><span class="p-Indicator">:</span> <span class="p-Indicator">&gt;-</span>
+              <span class="no">Select registered in Openstack flavor. Consider that service performance</span>
+              <span class="no">depends on this parameter.</span>
+            <span class="l-Scalar-Plain">required</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">false</span>
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">osImage</span>
+            <span class="l-Scalar-Plain">type</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">image</span>
+            <span class="l-Scalar-Plain">imageType</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">windows</span>
+            <span class="l-Scalar-Plain">label</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Instance image</span>
+            <span class="l-Scalar-Plain">description</span><span class="p-Indicator">:</span> <span class="p-Indicator">&gt;-</span>
+              <span class="no">Select valid image for a service. Image should already be prepared and</span>
+              <span class="no">registered in glance.</span>
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">availabilityZone</span>
+            <span class="l-Scalar-Plain">type</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">azone</span>
+            <span class="l-Scalar-Plain">label</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Availability zone</span>
+            <span class="l-Scalar-Plain">description</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Select availability zone where service would be installed.</span>
+            <span class="l-Scalar-Plain">required</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">false</span>
+</pre></div>
+</div>
+<p>Full example with Active Directory application form definitions is available here <em class="xref std std-ref">UI Definition Of AD App</em></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Dynamic UI Definition specification</a><ul>
+<li><a class="reference internal" href="#structure">Structure</a></li>
+<li><a class="reference internal" href="#version">Version</a></li>
+<li><a class="reference internal" href="#application-and-templates">Application and Templates</a></li>
+<li><a class="reference internal" href="#forms">Forms</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="../murano_pl/murano_pl.html"
+                                  title="previous chapter">YAML</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="workflow.html"
+                                  title="next chapter">Murano workflow</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/articles/dynamic_ui.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="workflow.html" title="Murano workflow"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../murano_pl/murano_pl.html" title="YAML"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Murano</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Wed Apr 29 17:52:18 2015, commit 9c804c9.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

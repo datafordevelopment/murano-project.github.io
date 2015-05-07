@@ -1,0 +1,725 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>MuranoPL Core Library &mdash; Murano</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.0.dev20',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Murano" href="../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="muranopl-core-library">
+<span id="core-library"></span><h1>MuranoPL Core Library<a class="headerlink" href="#muranopl-core-library" title="Permalink to this headline">¶</a></h1>
+<p>Some objects and actions could be used in several application deployments. All common parts are grouped into MuranoPL libraries.
+Murano core library is a set of classes needed in every deployment. Class names from core library could be used in the application definitions.
+This library is located under the <a class="reference external" href="http://git.openstack.org/cgit/openstack/murano/tree/meta/io.murano/">meta</a> directory.
+The following classes are included into the Murano core library:</p>
+<p><strong>io.murano:</strong></p>
+<ul class="simple">
+<li><a class="reference internal" href="#object"><em>Class: Object</em></a></li>
+<li><a class="reference internal" href="#application"><em>Class: Application</em></a></li>
+<li><a class="reference internal" href="#securitygroupmanager"><em>Class: SecurityGroupManager</em></a></li>
+<li><a class="reference internal" href="#environment"><em>Class: Environment</em></a></li>
+</ul>
+<p><strong>io.murano.resources:</strong></p>
+<ul>
+<li><p class="first"><a class="reference internal" href="#instance"><em>Class: Instance</em></a></p>
+<blockquote>
+<div><p><a class="reference internal" href="#instance-resources"><em>Resources</em></a>:</p>
+<ul class="simple">
+<li>Agent-v1.template</li>
+<li>Agent-v2.template</li>
+<li>linux-init.sh</li>
+<li>windows-init.sh</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><a class="reference internal" href="#network"><em>Class: Network</em></a></p>
+</li>
+</ul>
+<p><strong>io.murano.lib.networks.neutron:</strong></p>
+<ul class="simple">
+<li><a class="reference internal" href="#newnetwork"><em>Class: NewNetwork</em></a></li>
+</ul>
+<div class="section" id="class-object">
+<span id="object"></span><h2>Class: Object<a class="headerlink" href="#class-object" title="Permalink to this headline">¶</a></h2>
+<p>Parent class for all MuranoPL classes, which implements initialize method, and setAttr and getAttr methods, which are defined in the pythonic part of the Object class.
+All MuranoPL classes are implicitly inherited from this class.</p>
+</div>
+<div class="section" id="class-application">
+<span id="application"></span><h2>Class: Application<a class="headerlink" href="#class-application" title="Permalink to this headline">¶</a></h2>
+<p>Defines application itself. All custom applications should be derived from this class.
+Has two properties:</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">Namespaces</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">=</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano</span>
+
+<span class="l-Scalar-Plain">Name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Application</span>
+
+<span class="l-Scalar-Plain">Workflow</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">reportDeployed</span><span class="p-Indicator">:</span>
+      <span class="l-Scalar-Plain">Arguments</span><span class="p-Indicator">:</span>
+        <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">title</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.string()</span>
+            <span class="l-Scalar-Plain">Default</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">null</span>
+        <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">unitCount</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.int()</span>
+            <span class="l-Scalar-Plain">Default</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">null</span>
+      <span class="l-Scalar-Plain">Body</span><span class="p-Indicator">:</span>
+        <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$this.find(Environment).instanceNotifier.trackApplication($this, $title, $unitCount)</span>
+
+  <span class="l-Scalar-Plain">reportDestroyed</span><span class="p-Indicator">:</span>
+      <span class="l-Scalar-Plain">Body</span><span class="p-Indicator">:</span>
+        <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$this.find(Environment).instanceNotifier.untrackApplication($this)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="class-securitygroupmanager">
+<span id="securitygroupmanager"></span><h2>Class: SecurityGroupManager<a class="headerlink" href="#class-securitygroupmanager" title="Permalink to this headline">¶</a></h2>
+<p>Manages  security groups during application deployment.</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">Namespaces</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">=</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano.system</span>
+    <span class="l-Scalar-Plain">std</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano</span>
+
+<span class="l-Scalar-Plain">Name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">SecurityGroupManager</span>
+
+<span class="l-Scalar-Plain">Properties</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">environment</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.class(std:Environment).notNull()</span>
+
+  <span class="l-Scalar-Plain">defaultGroupName</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.string()</span>
+    <span class="l-Scalar-Plain">Usage</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Runtime</span>
+    <span class="l-Scalar-Plain">Default</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">format(&#39;MuranoSecurityGroup-{0}&#39;, $.environment.name)</span>
+
+<span class="l-Scalar-Plain">Workflow</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">addGroupIngress</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Arguments</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">rules</span><span class="p-Indicator">:</span>
+          <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span>
+            <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">FromPort</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.int().notNull()</span>
+              <span class="l-Scalar-Plain">ToPort</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.int().notNull()</span>
+              <span class="l-Scalar-Plain">IpProtocol</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.string().notNull()</span>
+              <span class="l-Scalar-Plain">External</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.bool().notNull()</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">groupName</span><span class="p-Indicator">:</span>
+          <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.string().notNull()</span>
+          <span class="l-Scalar-Plain">Default</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$this.defaultGroupName</span>
+    <span class="l-Scalar-Plain">Body</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$ext_keys</span><span class="p-Indicator">:</span>
+          <span class="l-Scalar-Plain">true</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">ext_key</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">remote_ip_prefix</span>
+            <span class="l-Scalar-Plain">ext_val</span><span class="p-Indicator">:</span> <span class="s">&#39;0.0.0.0/0&#39;</span>
+          <span class="l-Scalar-Plain">false</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">ext_key</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">remote_mode</span>
+            <span class="l-Scalar-Plain">ext_val</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">remote_group_id</span>
+
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$stack</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.environment.stack</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$template</span><span class="p-Indicator">:</span>
+          <span class="l-Scalar-Plain">Resources</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">$groupName</span><span class="p-Indicator">:</span>
+              <span class="l-Scalar-Plain">Type</span><span class="p-Indicator">:</span> <span class="s">&#39;OS::Neutron::SecurityGroup&#39;</span>
+              <span class="l-Scalar-Plain">Properties</span><span class="p-Indicator">:</span>
+                <span class="l-Scalar-Plain">description</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">format(&#39;Composite security group of Murano environment {0}&#39;, $.environment.name)</span>
+                <span class="l-Scalar-Plain">rules</span><span class="p-Indicator">:</span>
+                  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">port_range_min</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">null</span>
+                    <span class="l-Scalar-Plain">port_range_max</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">null</span>
+                    <span class="l-Scalar-Plain">protocol</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">icmp</span>
+                    <span class="l-Scalar-Plain">remote_ip_prefix</span><span class="p-Indicator">:</span> <span class="s">&#39;0.0.0.0/0&#39;</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.environment.stack.updateTemplate($template)</span>
+
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$ingress</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$rules.select(dict(</span>
+            <span class="l-Scalar-Plain">port_range_min =&gt; $.FromPort,</span>
+            <span class="l-Scalar-Plain">port_range_max =&gt; $.ToPort,</span>
+            <span class="l-Scalar-Plain">protocol =&gt; $.IpProtocol,</span>
+            <span class="l-Scalar-Plain">$ext_keys.get($.External).ext_key =&gt; $ext_keys.get($.External).ext_val</span>
+          <span class="l-Scalar-Plain">))</span>
+
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$template</span><span class="p-Indicator">:</span>
+          <span class="l-Scalar-Plain">Resources</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">$groupName</span><span class="p-Indicator">:</span>
+              <span class="l-Scalar-Plain">Type</span><span class="p-Indicator">:</span> <span class="s">&#39;OS::Neutron::SecurityGroup&#39;</span>
+              <span class="l-Scalar-Plain">Properties</span><span class="p-Indicator">:</span>
+                <span class="l-Scalar-Plain">rules</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$ingress</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.environment.stack.updateTemplate($template)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="class-environment">
+<span id="environment"></span><h2>Class: Environment<a class="headerlink" href="#class-environment" title="Permalink to this headline">¶</a></h2>
+<p>Defines an Environment in terms of deployments process. Groups all the Applications and their related infrastructure, able to deploy them at once.
+Environments is intent to group applications to manage them easily.</p>
+<ul class="simple">
+<li><em>name</em> - an environment name</li>
+<li><em>applications</em> - list of applications belonging to an environment</li>
+<li><em>agentListener</em> -  property containing a &#8216; <a class="reference internal" href="system_classes.html#io-murano-system-agentlistener"><em>io.murano.system.AgentListener</em></a> object, which may be used to interact with Murano Agent</li>
+<li><em>stack</em> - a property containing a HeatStack object which may be used to interact with the Heat Service</li>
+<li><em>instanceNotifier</em> - a property containing a <a class="reference internal" href="system_classes.html#io-murano-system-instancenotifier"><em>io.murano.system.InstanceNotifier</em></a> which may be used to keep track of the amount of deployed instances</li>
+<li><em>defaultNetworks</em> - a property containing user-defined Networks (<a class="reference internal" href="#network"><em>io.murano.resources.Network</em></a>), which may be used as the default networks for the Instances in this environment</li>
+<li><em>securityGroupManager</em>- a property containing a <a class="reference internal" href="#securitygroupmanager"><em>SecurityGroupManager</em></a> object, which may be used to construct a security group associated with this environment</li>
+</ul>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">Namespaces</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">=</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano</span>
+    <span class="l-Scalar-Plain">res</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano.resources</span>
+    <span class="l-Scalar-Plain">sys</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano.system</span>
+
+<span class="l-Scalar-Plain">Name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Environment</span>
+
+<span class="l-Scalar-Plain">Properties</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.string().notNull()</span>
+
+  <span class="l-Scalar-Plain">applications</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="nv">$.class(Application).owned().notNull()</span><span class="p-Indicator">]</span>
+
+  <span class="l-Scalar-Plain">agentListener</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.class(sys:AgentListener)</span>
+    <span class="l-Scalar-Plain">Usage</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Runtime</span>
+
+  <span class="l-Scalar-Plain">stack</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.class(sys:HeatStack)</span>
+    <span class="l-Scalar-Plain">Usage</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Runtime</span>
+
+  <span class="l-Scalar-Plain">instanceNotifier</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.class(sys:InstanceNotifier)</span>
+    <span class="l-Scalar-Plain">Usage</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Runtime</span>
+
+  <span class="l-Scalar-Plain">defaultNetworks</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span>
+      <span class="l-Scalar-Plain">environment</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.class(res:Network)</span>
+      <span class="l-Scalar-Plain">flat</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.class(res:Network)</span>
+    <span class="l-Scalar-Plain">Usage</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">In</span>
+
+  <span class="l-Scalar-Plain">securityGroupManager</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.class(sys:SecurityGroupManager)</span>
+    <span class="l-Scalar-Plain">Usage</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Runtime</span>
+
+<span class="l-Scalar-Plain">Workflow</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">initialize</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Body</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$this.agentListener</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">new(sys:AgentListener, name =&gt; $.name)</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$this.stack</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">new(sys:HeatStack, name =&gt; $.name)</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$this.instanceNotifier</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">new(sys:InstanceNotifier, environment =&gt; $this)</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$this.reporter</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">new(sys:StatusReporter, environment =&gt; $this)</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$this.securityGroupManager</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">new(sys:SecurityGroupManager, environment =&gt; $this)</span>
+
+
+  <span class="l-Scalar-Plain">deploy</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Body</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.agentListener.start()</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">If</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">len($.applications) = 0</span>
+        <span class="l-Scalar-Plain">Then</span><span class="p-Indicator">:</span>
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.stack.delete()</span>
+        <span class="l-Scalar-Plain">Else</span><span class="p-Indicator">:</span>
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.applications.pselect($.deploy())</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.agentListener.stop()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="class-instance">
+<span id="instance"></span><h2>Class: Instance<a class="headerlink" href="#class-instance" title="Permalink to this headline">¶</a></h2>
+<p>Defines virtual machine parameters and manage instance lifecycle: spawning, deploying, joining to the network, applying security group and destroying.</p>
+<ul>
+<li><p class="first"><em>name</em> - instance name</p>
+</li>
+<li><p class="first"><em>flavor</em> - instance flavor, defining virtual machine &#8216;hardware&#8217; parameters</p>
+</li>
+<li><p class="first"><em>image</em> - instance image, defining operation system</p>
+</li>
+<li><p class="first"><em>keyname</em> - key pair name, used to make connect easily to the instance; optional</p>
+</li>
+<li><p class="first"><em>agent</em> - configures interaction with Murano Agent using <a class="reference internal" href="system_classes.html#io-murano-system-agent"><em>MuranoPL system class</em></a></p>
+</li>
+<li><p class="first"><em>ipAddresses</em> - list of all IP addresses, assigned to an instance</p>
+</li>
+<li><dl class="first docutils">
+<dt><em>networks</em> - configures type of networks, to which instance will be joined.</dt>
+<dd><p class="first last">Custom networks, that extends <a class="reference internal" href="#network"><em>Network class</em></a> could be specified and an instance will be connected to them
+and for a default environment network or flat network if corresponding values are set to true;
+without additional configurations, instance will be joined to the default network that are set in the current environment.</p>
+</dd>
+</dl>
+</li>
+<li><p class="first"><em>assignFloatingIp</em> - determines, if floating IP need to be assigned to an instance, default is false</p>
+</li>
+<li><p class="first"><em>floatingIpAddress</em> - IP addresses, assigned to an instance after an application deployment</p>
+</li>
+<li><p class="first"><em>securityGroupName</em> - security group, to which instance will be joined, could be set; optional</p>
+</li>
+</ul>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">Namespaces</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">=</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano.resources</span>
+  <span class="l-Scalar-Plain">std</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano</span>
+  <span class="l-Scalar-Plain">sys</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano.system</span>
+
+<span class="l-Scalar-Plain">Name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Instance</span>
+
+<span class="l-Scalar-Plain">Properties</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.string().notNull()</span>
+  <span class="l-Scalar-Plain">flavor</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.string().notNull()</span>
+  <span class="l-Scalar-Plain">image</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.string().notNull()</span>
+  <span class="l-Scalar-Plain">keyname</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.string()</span>
+    <span class="l-Scalar-Plain">Default</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">null</span>
+
+  <span class="l-Scalar-Plain">agent</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.class(sys:Agent)</span>
+    <span class="l-Scalar-Plain">Usage</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Runtime</span>
+  <span class="l-Scalar-Plain">ipAddresses</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="nv">$.string()</span><span class="p-Indicator">]</span>
+    <span class="l-Scalar-Plain">Usage</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Out</span>
+  <span class="l-Scalar-Plain">networks</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span>
+      <span class="l-Scalar-Plain">useEnvironmentNetwork</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.bool().notNull()</span>
+      <span class="l-Scalar-Plain">useFlatNetwork</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.bool().notNull()</span>
+      <span class="l-Scalar-Plain">customNetworks</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="nv">$.class(Network).notNull()</span><span class="p-Indicator">]</span>
+    <span class="l-Scalar-Plain">Default</span><span class="p-Indicator">:</span>
+      <span class="l-Scalar-Plain">useEnvironmentNetwork</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">true</span>
+      <span class="l-Scalar-Plain">useFlatNetwork</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">false</span>
+      <span class="l-Scalar-Plain">customNetworks</span><span class="p-Indicator">:</span> <span class="p-Indicator">[]</span>
+  <span class="l-Scalar-Plain">assignFloatingIp</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.bool().notNull()</span>
+    <span class="l-Scalar-Plain">Default</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">false</span>
+  <span class="l-Scalar-Plain">floatingIpAddress</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.string()</span>
+    <span class="l-Scalar-Plain">Usage</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Out</span>
+  <span class="l-Scalar-Plain">securityGroupName</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.string()</span>
+    <span class="l-Scalar-Plain">Default</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">null</span>
+
+<span class="l-Scalar-Plain">Workflow</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">initialize</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Body</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.environment</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.find(std:Environment).require()</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.agent</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">new(sys:Agent, host =&gt; $)</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.resources</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">new(sys:Resources)</span>
+
+  <span class="l-Scalar-Plain">deploy</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Body</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$securityGroupName</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">coalesce(</span>
+            <span class="l-Scalar-Plain">$.securityGroupName,</span>
+            <span class="l-Scalar-Plain">$.environment.securityGroupManager.defaultGroupName</span>
+          <span class="l-Scalar-Plain">)</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.createDefaultInstanceSecurityGroupRules($securityGroupName)</span>
+
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">If</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.networks.useEnvironmentNetwork</span>
+        <span class="l-Scalar-Plain">Then</span><span class="p-Indicator">:</span>
+          <span class="l-Scalar-Plain">$.joinNet($.environment.defaultNetworks.environment, $securityGroupName)</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">If</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.networks.useFlatNetwork</span>
+        <span class="l-Scalar-Plain">Then</span><span class="p-Indicator">:</span>
+          <span class="l-Scalar-Plain">$.joinNet($.environment.defaultNetworks.flat, $securityGroupName)</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.networks.customNetworks.select($this.joinNet($, $securityGroupName))</span>
+
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$userData</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.prepareUserData()</span>
+
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$template</span><span class="p-Indicator">:</span>
+          <span class="l-Scalar-Plain">Resources</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">$.name</span><span class="p-Indicator">:</span>
+              <span class="l-Scalar-Plain">Type</span><span class="p-Indicator">:</span> <span class="s">&#39;AWS::EC2::Instance&#39;</span>
+              <span class="l-Scalar-Plain">Properties</span><span class="p-Indicator">:</span>
+                <span class="l-Scalar-Plain">InstanceType</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.flavor</span>
+                <span class="l-Scalar-Plain">ImageId</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.image</span>
+                <span class="l-Scalar-Plain">UserData</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$userData</span>
+                <span class="l-Scalar-Plain">KeyName</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.keyname</span>
+
+          <span class="l-Scalar-Plain">Outputs</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">format(&#39;{0}-PublicIp&#39;, $.name)</span><span class="p-Indicator">:</span>
+              <span class="l-Scalar-Plain">Value</span><span class="p-Indicator">:</span>
+                <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Fn::GetAtt</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="nv">$.name</span><span class="p-Indicator">,</span> <span class="nv">PublicIp</span><span class="p-Indicator">]</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.environment.stack.updateTemplate($template)</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.environment.stack.push()</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$outputs</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.environment.stack.output()</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.ipAddresses</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$outputs.get(format(&#39;{0}-PublicIp&#39;, $this.name))</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.floatingIpAddress</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$outputs.get(format(&#39;{0}-FloatingIPaddress&#39;, $this.name))</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.environment.instanceNotifier.trackApplication($this)</span>
+
+  <span class="l-Scalar-Plain">joinNet</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Arguments</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">net</span><span class="p-Indicator">:</span>
+          <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.class(Network)</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">securityGroupName</span><span class="p-Indicator">:</span>
+          <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.string()</span>
+    <span class="l-Scalar-Plain">Body</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">If</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$net != null</span>
+        <span class="l-Scalar-Plain">Then</span><span class="p-Indicator">:</span>
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">If</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.assignFloatingIp and (not bool($.getAttr(fipAssigned)))</span>
+            <span class="l-Scalar-Plain">Then</span><span class="p-Indicator">:</span>
+              <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$assignFip</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">true</span>
+              <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.setAttr(fipAssigned, true)</span>
+            <span class="l-Scalar-Plain">Else</span><span class="p-Indicator">:</span>
+              <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$assignFip</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">false</span>
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$net.addHostToNetwork($, $assignFip, $securityGroupName)</span>
+
+  <span class="l-Scalar-Plain">destroy</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Body</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$template</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.environment.stack.current()</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$patchBlock</span><span class="p-Indicator">:</span>
+          <span class="l-Scalar-Plain">op</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">remove</span>
+          <span class="l-Scalar-Plain">path</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">format(&#39;/Resources/{0}&#39;, $.name)</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$template</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">patch($template, $patchBlock)</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.environment.stack.setTemplate($template)</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.environment.stack.push()</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.environment.instanceNotifier.untrackApplication($this)</span>
+
+  <span class="l-Scalar-Plain">createDefaultInstanceSecurityGroupRules</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Arguments</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">groupName</span><span class="p-Indicator">:</span>
+          <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.string().notNull()</span>
+    <span class="l-Scalar-Plain">Body</span><span class="p-Indicator">:</span>
+
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">If</span><span class="p-Indicator">:</span> <span class="kt">!yaql</span> <span class="s">&quot;&#39;w&#39;</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">toLower($.image)&quot;</span>
+        <span class="l-Scalar-Plain">Then</span><span class="p-Indicator">:</span>
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$rules</span><span class="p-Indicator">:</span>
+              <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">ToPort</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">3389</span>
+                <span class="l-Scalar-Plain">IpProtocol</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">tcp</span>
+                <span class="l-Scalar-Plain">FromPort</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">3389</span>
+                <span class="l-Scalar-Plain">External</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">true</span>
+        <span class="l-Scalar-Plain">Else</span><span class="p-Indicator">:</span>
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$rules</span><span class="p-Indicator">:</span>
+              <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">ToPort</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">22</span>
+                <span class="l-Scalar-Plain">IpProtocol</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">tcp</span>
+                <span class="l-Scalar-Plain">FromPort</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">22</span>
+                <span class="l-Scalar-Plain">External</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">true</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.environment.securityGroupManager.addGroupIngress(</span>
+          <span class="l-Scalar-Plain">rules =&gt; $rules, groupName =&gt; $groupName)</span>
+
+  <span class="l-Scalar-Plain">getDefaultSecurityRules</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">prepareUserData</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Body</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">If</span><span class="p-Indicator">:</span> <span class="kt">!yaql</span> <span class="s">&quot;&#39;w&#39;</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">toLower($.image)&quot;</span>
+        <span class="l-Scalar-Plain">Then</span><span class="p-Indicator">:</span>
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$configFile</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.resources.string(&#39;Agent-v1.template&#39;)</span>
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$initScript</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.resources.string(&#39;windows-init.ps1&#39;)</span>
+        <span class="l-Scalar-Plain">Else</span><span class="p-Indicator">:</span>
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$configFile</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.resources.string(&#39;Agent-v2.template&#39;)</span>
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$initScript</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.resources.string(&#39;linux-init.sh&#39;)</span>
+
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$configReplacements</span><span class="p-Indicator">:</span>
+          <span class="s">&quot;%RABBITMQ_HOST%&quot;</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">config(rabbitmq, host)</span>
+          <span class="s">&quot;%RABBITMQ_PORT%&quot;</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">config(rabbitmq, port)</span>
+          <span class="s">&quot;%RABBITMQ_USER%&quot;</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">config(rabbitmq, login)</span>
+          <span class="s">&quot;%RABBITMQ_PASSWORD%&quot;</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">config(rabbitmq, password)</span>
+          <span class="s">&quot;%RABBITMQ_VHOST%&quot;</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">config(rabbitmq, virtual_host)</span>
+          <span class="s">&quot;%RABBITMQ_SSL%&quot;</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">str(config(rabbitmq, ssl)).toLower()</span>
+          <span class="s">&quot;%RABBITMQ_INPUT_QUEUE%&quot;</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.agent.queueName()</span>
+          <span class="s">&quot;%RESULT_QUEUE%&quot;</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.environment.agentListener.queueName()</span>
+
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$scriptReplacements</span><span class="p-Indicator">:</span>
+          <span class="s">&quot;%AGENT_CONFIG_BASE64%&quot;</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">base64encode($configFile.replace($configReplacements))</span>
+          <span class="s">&quot;%INTERNAL_HOSTNAME%&quot;</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.name</span>
+          <span class="s">&quot;%MURANO_SERVER_ADDRESS%&quot;</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">coalesce(config(file_server), config(rabbitmq, host))</span>
+          <span class="s">&quot;%CA_ROOT_CERT_BASE64%&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;&quot;</span>
+
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Return</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$initScript.replace($scriptReplacements)</span>
+</pre></div>
+</div>
+<p id="instance-resources">Instance class uses the following resources:</p>
+<ul class="simple">
+<li><em>Agent-v2.template</em> - Python Murano Agent template (This agent is unified and lately, Windows Agent will be included into it)</li>
+<li><em>linux-init.sh</em> - Python Murano Agent initialization script, which sets up an agent with valid information, containing in                                                 updated agent template.</li>
+<li><em>Agent-v1.template</em> - Windows Murano Agent template</li>
+<li><em>windows-init.sh</em> -  Windows Murano Agent initialization script</li>
+</ul>
+</div>
+<div class="section" id="class-network">
+<span id="network"></span><h2>Class: Network<a class="headerlink" href="#class-network" title="Permalink to this headline">¶</a></h2>
+<p>Base abstract class for all MuranoPL classes, representing networks.</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">Namespaces</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">=</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano.resources</span>
+
+<span class="l-Scalar-Plain">Name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Network</span>
+
+<span class="l-Scalar-Plain">Workflow</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">addHostToNetwork</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Arguments</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">instance</span><span class="p-Indicator">:</span>
+          <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.class(Instance).notNull()</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">assignFloatingIp</span><span class="p-Indicator">:</span>
+          <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.bool().notNull()</span>
+          <span class="l-Scalar-Plain">Default</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">false</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">securityGroupName</span><span class="p-Indicator">:</span>
+          <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.string()</span>
+          <span class="l-Scalar-Plain">Default</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">null</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="class-newnetwork">
+<span id="newnetwork"></span><h2>Class: NewNetwork<a class="headerlink" href="#class-newnetwork" title="Permalink to this headline">¶</a></h2>
+<p>Defining network type, using in Neutron.</p>
+<ul class="simple">
+<li><em>name</em> - network name</li>
+<li><em>autoUplink</em> - defines auto uplink network parameter; optional, turned on by default</li>
+<li><em>autogenerateSubnet</em> - defines auto subnet generation; optional, turned on by default</li>
+<li><em>subnetCidr</em> - CIDR, defining network subnet, optional</li>
+<li><em>dnsNameserver</em> - DNS server name, optional</li>
+<li><em>useDefaultDns</em> - defines ether set default DNS or not, optional, turned on by default</li>
+</ul>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">Namespaces</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">=</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano.lib.networks.neutron</span>
+  <span class="l-Scalar-Plain">res</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano.resources</span>
+  <span class="l-Scalar-Plain">std</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano</span>
+  <span class="l-Scalar-Plain">sys</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano.system</span>
+
+<span class="l-Scalar-Plain">Name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">NewNetwork</span>
+
+<span class="l-Scalar-Plain">Extends</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">res:Network</span>
+
+<span class="l-Scalar-Plain">Properties</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.string().notNull()</span>
+
+  <span class="l-Scalar-Plain">externalRouterId</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.string()</span>
+    <span class="l-Scalar-Plain">Usage</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">InOut</span>
+
+  <span class="l-Scalar-Plain">autoUplink</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.bool().notNull()</span>
+    <span class="l-Scalar-Plain">Default</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">true</span>
+
+  <span class="l-Scalar-Plain">autogenerateSubnet</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.bool().notNull()</span>
+    <span class="l-Scalar-Plain">Default</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">true</span>
+
+  <span class="l-Scalar-Plain">subnetCidr</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.string()</span>
+    <span class="l-Scalar-Plain">Usage</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">InOut</span>
+
+  <span class="l-Scalar-Plain">dnsNameserver</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.string()</span>
+    <span class="l-Scalar-Plain">Usage</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">InOut</span>
+
+  <span class="l-Scalar-Plain">useDefaultDns</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.bool().notNull()</span>
+    <span class="l-Scalar-Plain">Default</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">true</span>
+
+<span class="l-Scalar-Plain">Workflow</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">initialize</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Body</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.environment</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.find(std:Environment).require()</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.netExplorer</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">new(sys:NetworkExplorer)</span>
+
+  <span class="l-Scalar-Plain">deploy</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Body</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.ensureNetworkConfigured()</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.environment.instanceNotifier.untrackApplication($this)</span>
+
+  <span class="l-Scalar-Plain">addHostToNetwork</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Arguments</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">instance</span><span class="p-Indicator">:</span>
+          <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.class(res:Instance).notNull()</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">assignFloatingIp</span><span class="p-Indicator">:</span>
+          <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.bool().notNull()</span>
+          <span class="l-Scalar-Plain">Default</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">false</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">securityGroupName</span><span class="p-Indicator">:</span>
+          <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.string()</span>
+          <span class="l-Scalar-Plain">Default</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">null</span>
+    <span class="l-Scalar-Plain">Body</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.ensureNetworkConfigured()</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$portname</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$instance.name + &#39;-port-to-&#39; + $.id()</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$template</span><span class="p-Indicator">:</span>
+          <span class="l-Scalar-Plain">Resources</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">$portname</span><span class="p-Indicator">:</span>
+              <span class="l-Scalar-Plain">Type</span><span class="p-Indicator">:</span> <span class="s">&#39;OS::Neutron::Port&#39;</span>
+              <span class="l-Scalar-Plain">Properties</span><span class="p-Indicator">:</span>
+                <span class="l-Scalar-Plain">network_id</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span><span class="nv">Ref</span><span class="p-Indicator">:</span> <span class="nv">$.net_res_name</span><span class="p-Indicator">}</span>
+                <span class="l-Scalar-Plain">fixed_ips</span><span class="p-Indicator">:</span> <span class="p-Indicator">[{</span><span class="nv">subnet_id</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span><span class="nv">Ref</span><span class="p-Indicator">:</span> <span class="nv">$.subnet_res_name</span><span class="p-Indicator">}}]</span>
+                <span class="l-Scalar-Plain">security_groups</span><span class="p-Indicator">:</span>
+                  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Ref</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$securityGroupName</span>
+            <span class="l-Scalar-Plain">$instance.name</span><span class="p-Indicator">:</span>
+              <span class="l-Scalar-Plain">Properties</span><span class="p-Indicator">:</span>
+                <span class="l-Scalar-Plain">NetworkInterfaces</span><span class="p-Indicator">:</span>
+                  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Ref</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$portname</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.environment.stack.updateTemplate($template)</span>
+
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">If</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$assignFloatingIp</span>
+        <span class="l-Scalar-Plain">Then</span><span class="p-Indicator">:</span>
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$extNetId</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.netExplorer.getExternalNetworkIdForRouter($.externalRouterId)</span>
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">If</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$extNetId != null</span>
+            <span class="l-Scalar-Plain">Then</span><span class="p-Indicator">:</span>
+              <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$fip_name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$instance.name + &#39;-FloatingIP-&#39; + $.id()</span>
+              <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$template</span><span class="p-Indicator">:</span>
+                  <span class="l-Scalar-Plain">Resources</span><span class="p-Indicator">:</span>
+                    <span class="l-Scalar-Plain">$fip_name</span><span class="p-Indicator">:</span>
+                      <span class="l-Scalar-Plain">Type</span><span class="p-Indicator">:</span> <span class="s">&#39;OS::Neutron::FloatingIP&#39;</span>
+                      <span class="l-Scalar-Plain">Properties</span><span class="p-Indicator">:</span>
+                        <span class="l-Scalar-Plain">floating_network_id</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$extNetId</span>
+                    <span class="l-Scalar-Plain">$instance.name + &#39;-FloatingIpAssoc-&#39; + $.id()</span><span class="p-Indicator">:</span>
+                      <span class="l-Scalar-Plain">Type</span><span class="p-Indicator">:</span> <span class="s">&#39;OS::Neutron::FloatingIPAssociation&#39;</span>
+                      <span class="l-Scalar-Plain">Properties</span><span class="p-Indicator">:</span>
+                        <span class="l-Scalar-Plain">floatingip_id</span><span class="p-Indicator">:</span>
+                          <span class="l-Scalar-Plain">Ref</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$fip_name</span>
+                        <span class="l-Scalar-Plain">port_id</span><span class="p-Indicator">:</span>
+                          <span class="l-Scalar-Plain">Ref</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$portname</span>
+                  <span class="l-Scalar-Plain">Outputs</span><span class="p-Indicator">:</span>
+                    <span class="l-Scalar-Plain">$instance.name + &#39;-FloatingIPaddress&#39;</span><span class="p-Indicator">:</span>
+                      <span class="l-Scalar-Plain">Value</span><span class="p-Indicator">:</span>
+                        <span class="l-Scalar-Plain">Fn::GetAtt</span><span class="p-Indicator">:</span>
+                          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$fip_name</span>
+                          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">floating_ip_address</span>
+                      <span class="l-Scalar-Plain">Description</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Floating IP assigned</span>
+              <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.environment.stack.updateTemplate($template)</span>
+
+  <span class="l-Scalar-Plain">ensureNetworkConfigured</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Body</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">If</span><span class="p-Indicator">:</span> <span class="kt">!yaql</span> <span class="s">&quot;not</span><span class="nv"> </span><span class="s">bool($.getAttr(networkConfigured))&quot;</span>
+        <span class="l-Scalar-Plain">Then</span><span class="p-Indicator">:</span>
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">If</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.useDefaultDns and (not bool($.dnsNameserver))</span>
+            <span class="l-Scalar-Plain">Then</span><span class="p-Indicator">:</span>
+              <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.dnsNameserver</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.netExplorer.getDefaultDns()</span>
+
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.net_res_name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.name + &#39;-net-&#39; + $.id()</span>
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.subnet_res_name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.name + &#39;-subnet-&#39; + $.id()</span>
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.createNetwork()</span>
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">If</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.autoUplink and (not bool($.externalRouterId))</span>
+            <span class="l-Scalar-Plain">Then</span><span class="p-Indicator">:</span>
+              <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.externalRouterId</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.netExplorer.getDefaultRouter()</span>
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">If</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.autogenerateSubnet and (not bool($.subnetCidr))</span>
+            <span class="l-Scalar-Plain">Then</span><span class="p-Indicator">:</span>
+              <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.subnetCidr</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.netExplorer.getAvailableCidr($.externalRouterId, $.id())</span>
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.createSubnet()</span>
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">If</span><span class="p-Indicator">:</span> <span class="kt">!yaql</span> <span class="s">&quot;bool($.externalRouterId)&quot;</span>
+            <span class="l-Scalar-Plain">Then</span><span class="p-Indicator">:</span>
+              <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.createRouterInterface()</span>
+
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.environment.stack.push()</span>
+          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.setAttr(networkConfigured, true)</span>
+
+
+  <span class="l-Scalar-Plain">createNetwork</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Body</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$template</span><span class="p-Indicator">:</span>
+          <span class="l-Scalar-Plain">Resources</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">$.net_res_name</span><span class="p-Indicator">:</span>
+              <span class="l-Scalar-Plain">Type</span><span class="p-Indicator">:</span> <span class="s">&#39;OS::Neutron::Net&#39;</span>
+              <span class="l-Scalar-Plain">Properties</span><span class="p-Indicator">:</span>
+                <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.name</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.environment.stack.updateTemplate($template)</span>
+
+  <span class="l-Scalar-Plain">createSubnet</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Body</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$template</span><span class="p-Indicator">:</span>
+          <span class="l-Scalar-Plain">Resources</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">$.subnet_res_name</span><span class="p-Indicator">:</span>
+              <span class="l-Scalar-Plain">Type</span><span class="p-Indicator">:</span> <span class="s">&#39;OS::Neutron::Subnet&#39;</span>
+              <span class="l-Scalar-Plain">Properties</span><span class="p-Indicator">:</span>
+                <span class="l-Scalar-Plain">network_id</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span><span class="nv">Ref</span><span class="p-Indicator">:</span> <span class="nv">$.net_res_name</span><span class="p-Indicator">}</span>
+                <span class="l-Scalar-Plain">ip_version</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">4</span>
+                <span class="l-Scalar-Plain">dns_nameservers</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="nv">$.dnsNameserver</span><span class="p-Indicator">]</span>
+                <span class="l-Scalar-Plain">cidr</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.subnetCidr</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.environment.stack.updateTemplate($template)</span>
+
+  <span class="l-Scalar-Plain">createRouterInterface</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Body</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$template</span><span class="p-Indicator">:</span>
+          <span class="l-Scalar-Plain">Resources</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">$.name + &#39;-ri-&#39; + $.id()</span><span class="p-Indicator">:</span>
+              <span class="l-Scalar-Plain">Type</span><span class="p-Indicator">:</span> <span class="s">&#39;OS::Neutron::RouterInterface&#39;</span>
+              <span class="l-Scalar-Plain">Properties</span><span class="p-Indicator">:</span>
+                <span class="l-Scalar-Plain">router_id</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">$.externalRouterId</span>
+                <span class="l-Scalar-Plain">subnet_id</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span><span class="nv">Ref</span><span class="p-Indicator">:</span> <span class="nv">$.subnet_res_name</span><span class="p-Indicator">}</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">$.environment.stack.updateTemplate($template)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">MuranoPL Core Library</a><ul>
+<li><a class="reference internal" href="#class-object">Class: Object</a></li>
+<li><a class="reference internal" href="#class-application">Class: Application</a></li>
+<li><a class="reference internal" href="#class-securitygroupmanager">Class: SecurityGroupManager</a></li>
+<li><a class="reference internal" href="#class-environment">Class: Environment</a></li>
+<li><a class="reference internal" href="#class-instance">Class: Instance</a></li>
+<li><a class="reference internal" href="#class-network">Class: Network</a></li>
+<li><a class="reference internal" href="#class-newnetwork">Class: NewNetwork</a></li>
+</ul>
+</li>
+</ul>
+
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/murano_pl/core_classes.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Murano</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Wed Apr 29 17:52:18 2015, commit 9c804c9.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

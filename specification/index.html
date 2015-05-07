@@ -1,0 +1,2616 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Murano API v1 specification &mdash; Murano</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.0.dev20',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Murano" href="../index.html" />
+    <link rel="prev" title="Migrating applications from Murano v0.5 to Stable/Juno" href="../articles/app_migrating.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="murano-api-v1-specification">
+<h1>Murano API v1 specification<a class="headerlink" href="#murano-api-v1-specification" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="general-information">
+<h2>General information<a class="headerlink" href="#general-information" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first"><strong>Introduction</strong></p>
+<blockquote>
+<div><p>Murano Service API is a programmatic interface used for interaction with
+Murano. Other interaction mechanisms like Murano Dashboard or Murano CLI
+should use API as underlying protocol for interaction.</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Allowed HTTPs requests</strong></p>
+<ul class="simple">
+<li><em>POST</em>   :   To create a resource</li>
+<li><em>GET</em>    :   Get a resource or list of resources</li>
+<li><em>DELETE</em> :   To delete resource</li>
+<li><em>PATCH</em>  :   To update a resource</li>
+</ul>
+</li>
+<li><p class="first"><strong>Description Of Usual Server Responses</strong></p>
+<ul class="simple">
+<li>200 <tt class="docutils literal"><span class="pre">OK</span></tt> - the request was successful.</li>
+<li>201 <tt class="docutils literal"><span class="pre">Created</span></tt> - the request was successful and a resource was created.</li>
+<li>204 <tt class="docutils literal"><span class="pre">No</span> <span class="pre">Content</span></tt> - the request was successful but there is no representation to return (i.e. the response is empty).</li>
+<li>400 <tt class="docutils literal"><span class="pre">Bad</span> <span class="pre">Request</span></tt> - the request could not be understood or required parameters were missing.</li>
+<li>401 <tt class="docutils literal"><span class="pre">Unauthorized</span></tt> - authentication failed or user didn&#8217;t have permissions for requested operation.</li>
+<li>403 <tt class="docutils literal"><span class="pre">Forbidden</span></tt> - access denied.</li>
+<li>404 <tt class="docutils literal"><span class="pre">Not</span> <span class="pre">Found</span></tt> - resource was not found</li>
+<li>405 <tt class="docutils literal"><span class="pre">Method</span> <span class="pre">Not</span> <span class="pre">Allowed</span></tt> - requested method is not supported for resource.</li>
+<li>409 <tt class="docutils literal"><span class="pre">Conflict</span></tt> - requested method resulted in a conflict with the current state of the resource.</li>
+</ul>
+</li>
+<li><p class="first"><strong>Response of POSTs and PUTs</strong></p>
+<blockquote>
+<div><p>All POST and PUT requests by convention should return the created object
+(in the case of POST, with a generated ID) as if it was requested by
+GET.</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Authentication</strong></p>
+<blockquote>
+<div><p>All requests include a Keystone authentication token header
+(X-Auth-Token). Clients must authenticate with Keystone before
+interacting with the Murano service.</p>
+</div></blockquote>
+</li>
+</ul>
+</div>
+<div class="section" id="glossary">
+<h2>Glossary<a class="headerlink" href="#glossary" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first"><strong>Environment</strong></p>
+<blockquote>
+<div><p>Environment is a set of applications managed by a single tenant. They could be related logically with each other or not.
+Applications within single Environment may comprise some complex configuration while applications in different Environments are always
+independent from one another. Each Environment is associated with single
+OpenStack project (tenant).</p>
+</div></blockquote>
+</li>
+</ul>
+<ul id="sessions">
+<li><p class="first"><strong>Session</strong></p>
+<blockquote>
+<div><p>Since Murano environment are available for local modification for different users and from different locations, it&#8217;s needed to store local modifications somewhere.
+So sessions were created to provide this opportunity. After user adds application to the environment - new session is created.
+After user sends environment to deploy, session with set of applications changes status to <em>deploying</em> and all other open sessions for that environment becomes invalid.
+One session could be deployed only once.</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Object Model</strong></p>
+<blockquote>
+<div><p>Applications are defined in MuranoPL object model, which is defined as JSON object.
+Murano API doesn&#8217;t know anything about it.</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Package</strong></p>
+<blockquote>
+<div><p>A .zip archive, containing instructions for an application deployment.</p>
+</div></blockquote>
+</li>
+<li><dl class="first docutils">
+<dt><strong>Environment-Template</strong></dt>
+<dd><p class="first last">The Environment template is the specification of a set of applications managed by a single tenant, which are
+related each other. The environment template is stored in a environment template catalogue, and it can be
+managed by the user (creation, deletion, updating...). Finally, it can be deployed on Openstack by translating
+into an environment.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="environment-api">
+<h2>Environment API<a class="headerlink" href="#environment-api" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="29%" />
+<col width="16%" />
+<col width="56%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>id</td>
+<td>string</td>
+<td>Unique ID</td>
+</tr>
+<tr class="row-odd"><td>name</td>
+<td>string</td>
+<td>User-friendly name</td>
+</tr>
+<tr class="row-even"><td>created</td>
+<td>datetime</td>
+<td>Creation date and time in ISO format</td>
+</tr>
+<tr class="row-odd"><td>updated</td>
+<td>datetime</td>
+<td>Modification date and time in ISO format</td>
+</tr>
+<tr class="row-even"><td>tenant_id</td>
+<td>string</td>
+<td>OpenStack tenant ID</td>
+</tr>
+<tr class="row-odd"><td>version</td>
+<td>int</td>
+<td>Current version</td>
+</tr>
+<tr class="row-even"><td>networking</td>
+<td>string</td>
+<td>Network settings</td>
+</tr>
+<tr class="row-odd"><td>status</td>
+<td>string</td>
+<td>Deployment status: ready, pending,
+deploying</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Common response codes</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Code</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>200</td>
+<td>Operation completed successfully</td>
+</tr>
+<tr class="row-odd"><td>401</td>
+<td>User is not authorized to perform the operation</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="list-environments">
+<h3>List Environments<a class="headerlink" href="#list-environments" title="Permalink to this headline">¶</a></h3>
+<p><em>Request</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="44%" />
+<col width="44%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>GET</td>
+<td>/environments</td>
+<td>Get a list of existing
+Environments</td>
+</tr>
+</tbody>
+</table>
+<p><em>Response</em></p>
+<p>This call returns list of environments. Only the basic properties are
+returned.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+    <span class="s">&quot;environments&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s">&quot;status&quot;</span><span class="p">:</span> <span class="s">&quot;ready&quot;</span><span class="p">,</span>
+            <span class="s">&quot;updated&quot;</span><span class="p">:</span> <span class="s">&quot;2014-05-14T13:02:54&quot;</span><span class="p">,</span>
+            <span class="s">&quot;networking&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;test1&quot;</span><span class="p">,</span>
+            <span class="s">&quot;created&quot;</span><span class="p">:</span> <span class="s">&quot;2014-05-14T13:02:46&quot;</span><span class="p">,</span>
+            <span class="s">&quot;tenant_id&quot;</span><span class="p">:</span> <span class="s">&quot;726ed856965f43cc8e565bc991fa76c3&quot;</span><span class="p">,</span>
+            <span class="s">&quot;version&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;2fa5ab704749444bbeafe7991b412c33&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s">&quot;status&quot;</span><span class="p">:</span> <span class="s">&quot;ready&quot;</span><span class="p">,</span>
+            <span class="s">&quot;updated&quot;</span><span class="p">:</span> <span class="s">&quot;2014-05-14T13:02:55&quot;</span><span class="p">,</span>
+            <span class="s">&quot;networking&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;test2&quot;</span><span class="p">,</span>
+            <span class="s">&quot;created&quot;</span><span class="p">:</span> <span class="s">&quot;2014-05-14T13:02:51&quot;</span><span class="p">,</span>
+            <span class="s">&quot;tenant_id&quot;</span><span class="p">:</span> <span class="s">&quot;726ed856965f43cc8e565bc991fa76c3&quot;</span><span class="p">,</span>
+            <span class="s">&quot;version&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;744e44812da84e858946f5d817de4f72&quot;</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="create-environment">
+<h3>Create Environment<a class="headerlink" href="#create-environment" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="24%" />
+<col width="13%" />
+<col width="62%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>name</td>
+<td>string</td>
+<td>Environment name; only alphanumeric characters and &#8216;-&#8216;</td>
+</tr>
+</tbody>
+</table>
+<p><em>Request</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="44%" />
+<col width="44%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>POST</td>
+<td>/environments</td>
+<td>Create new Environment</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><p class="first"><strong>Content-Type</strong>
+application/json</p>
+</li>
+<li><dl class="first docutils">
+<dt><strong>Example</strong></dt>
+<dd><p class="first last">{&#8220;name&#8221;: &#8220;env_name&#8221;}</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p><em>Response</em></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+    <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;ce373a477f211e187a55404a662f968&quot;</span><span class="p">,</span>
+    <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;env_name&quot;</span><span class="p">,</span>
+    <span class="s">&quot;created&quot;</span><span class="p">:</span> <span class="s">&quot;2013-11-30T03:23:42Z&quot;</span><span class="p">,</span>
+    <span class="s">&quot;updated&quot;</span><span class="p">:</span> <span class="s">&quot;2013-11-30T03:23:44Z&quot;</span><span class="p">,</span>
+    <span class="s">&quot;tenant_id&quot;</span><span class="p">:</span> <span class="s">&quot;0849006f7ce94961b3aab4e46d6f229a&quot;</span><span class="p">,</span>
+    <span class="s">&quot;version&quot;</span><span class="p">:</span> <span class="mi">0</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="update-environment">
+<h3>Update Environment<a class="headerlink" href="#update-environment" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="24%" />
+<col width="13%" />
+<col width="62%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>name</td>
+<td>string</td>
+<td>Environment name; only alphanumeric characters and &#8216;-&#8216;</td>
+</tr>
+</tbody>
+</table>
+<p><em>Request</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="44%" />
+<col width="44%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>PUT</td>
+<td>/environments/&lt;env_id&gt;</td>
+<td>Update an existing Environment</td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li><strong>Content-Type</strong>
+application/json</li>
+<li><strong>Example</strong>
+{&#8220;name&#8221;: &#8220;env_name_changed&#8221;}</li>
+</ul>
+<p><em>Response</em></p>
+<dl class="docutils">
+<dt><strong>Content-Type</strong></dt>
+<dd>application/json</dd>
+</dl>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+    <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;ce373a477f211e187a55404a662f968&quot;</span><span class="p">,</span>
+    <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;env_name_changed&quot;</span><span class="p">,</span>
+    <span class="s">&quot;created&quot;</span><span class="p">:</span> <span class="s">&quot;2013-11-30T03:23:42Z&quot;</span><span class="p">,</span>
+    <span class="s">&quot;updated&quot;</span><span class="p">:</span> <span class="s">&quot;2013-11-30T03:45:54Z&quot;</span><span class="p">,</span>
+    <span class="s">&quot;tenant_id&quot;</span><span class="p">:</span> <span class="s">&quot;0849006f7ce94961b3aab4e46d6f229a&quot;</span><span class="p">,</span>
+    <span class="s">&quot;version&quot;</span><span class="p">:</span> <span class="mi">0</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="get-environment-details">
+<h3>Get Environment Details<a class="headerlink" href="#get-environment-details" title="Permalink to this headline">¶</a></h3>
+<p><em>Request</em></p>
+<p>Return information about environment itself and about applications, including to this environment.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="9%" />
+<col width="30%" />
+<col width="31%" />
+<col width="30%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+<th class="head">Header</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>GET</td>
+<td>/environments/{id}</td>
+<td>X-Configuration-Session (optional)</td>
+<td>Response detailed information
+about Environment including
+child entities</td>
+</tr>
+</tbody>
+</table>
+<p><em>Response</em></p>
+<dl class="docutils">
+<dt><strong>Content-Type</strong></dt>
+<dd>application/json</dd>
+</dl>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+    <span class="s">&quot;status&quot;</span><span class="p">:</span> <span class="s">&quot;ready&quot;</span><span class="p">,</span>
+    <span class="s">&quot;updated&quot;</span><span class="p">:</span> <span class="s">&quot;2014-05-14T13:12:26&quot;</span><span class="p">,</span>
+    <span class="s">&quot;networking&quot;</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;quick-env-2&quot;</span><span class="p">,</span>
+    <span class="s">&quot;created&quot;</span><span class="p">:</span> <span class="s">&quot;2014-05-14T13:09:55&quot;</span><span class="p">,</span>
+    <span class="s">&quot;tenant_id&quot;</span><span class="p">:</span> <span class="s">&quot;726ed856965f43cc8e565bc991fa76c3&quot;</span><span class="p">,</span>
+    <span class="s">&quot;version&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s">&quot;services&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s">&quot;instance&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s">&quot;flavor&quot;</span><span class="p">:</span> <span class="s">&quot;m1.medium&quot;</span><span class="p">,</span>
+                <span class="s">&quot;image&quot;</span><span class="p">:</span> <span class="s">&quot;cloud-fedora-v3&quot;</span><span class="p">,</span>
+                <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;exgchhv6nbika2&quot;</span><span class="p">,</span>
+                <span class="s">&quot;ipAddresses&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="s">&quot;10.0.0.200&quot;</span>
+                <span class="p">],</span>
+                <span class="s">&quot;?&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;io.murano.resources.Instance&quot;</span><span class="p">,</span>
+                    <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;14cce9d9-aaa1-4f09-84a9-c4bb859edaff&quot;</span>
+                <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;rewt4w56&quot;</span><span class="p">,</span>
+            <span class="s">&quot;?&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s">&quot;status&quot;</span><span class="p">:</span> <span class="s">&quot;ready&quot;</span><span class="p">,</span>
+                <span class="s">&quot;_26411a1861294160833743e45d0eaad9&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;Telnet&quot;</span>
+                <span class="p">},</span>
+                <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;io.murano.apps.linux.Telnet&quot;</span><span class="p">,</span>
+                <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;446373ef-03b5-4925-b095-6c56568fa518&quot;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;20d4a012628e4073b48490a336a8acbf&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="delete-environment">
+<h3>Delete Environment<a class="headerlink" href="#delete-environment" title="Permalink to this headline">¶</a></h3>
+<p><em>Request</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="44%" />
+<col width="44%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>DELETE</td>
+<td>/environments/{id}</td>
+<td>Remove specified Environment.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="environment-configuration-api">
+<h2>Environment Configuration API<a class="headerlink" href="#environment-configuration-api" title="Permalink to this headline">¶</a></h2>
+<p>Multiple <a class="reference internal" href="#sessions">sessions</a> could be opened for one environment simultaneously, but only one session going
+to be deployed. First session that starts deploying is going to be deployed; other ones become invalid and could not be deployed at all.
+User could not open new session for environment that in
+<em>deploying</em> state (that’s why we call it &#8220;almost lock free&#8221; model).</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="29%" />
+<col width="16%" />
+<col width="56%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>id</td>
+<td>string</td>
+<td>Session unique ID</td>
+</tr>
+<tr class="row-odd"><td>environment_id</td>
+<td>string</td>
+<td>Environment that going to be modified
+during this session</td>
+</tr>
+<tr class="row-even"><td>created</td>
+<td>datetime</td>
+<td>Creation date and time in ISO format</td>
+</tr>
+<tr class="row-odd"><td>updated</td>
+<td>datetime</td>
+<td>Modification date and time in ISO format</td>
+</tr>
+<tr class="row-even"><td>user_id</td>
+<td>string</td>
+<td>Session owner ID</td>
+</tr>
+<tr class="row-odd"><td>version</td>
+<td>int</td>
+<td>Environment version for which
+configuration session is opened</td>
+</tr>
+<tr class="row-even"><td>state</td>
+<td>string</td>
+<td>Session state. Could be: open, deploying,
+deployed</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="configure-environment-open-session">
+<h3>Configure Environment / Open session<a class="headerlink" href="#configure-environment-open-session" title="Permalink to this headline">¶</a></h3>
+<p>During this call new working session is created, and session ID should be sent in a request header with name <tt class="docutils literal"><span class="pre">X-Configuration-Session</span></tt>.</p>
+<p><em>Request</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="44%" />
+<col width="44%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>POST</td>
+<td>/environments/&lt;env_id&gt;/configure</td>
+<td>Creating new configuration
+session</td>
+</tr>
+</tbody>
+</table>
+<p><em>Response</em></p>
+<dl class="docutils">
+<dt><strong>Content-Type</strong></dt>
+<dd>application/json</dd>
+</dl>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+    <span class="s">&quot;updated&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2014</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">58</span><span class="p">,</span> <span class="mi">949358</span><span class="p">),</span>
+    <span class="s">&quot;environment_id&quot;</span><span class="p">:</span> <span class="s">&quot;744e44812da84e858946f5d817de4f72&quot;</span><span class="p">,</span>
+    <span class="s">&quot;ser_id&quot;</span><span class="p">:</span> <span class="s">&quot;4e91d06270c54290b9dbdf859356d3b3&quot;</span><span class="p">,</span>
+    <span class="s">&quot;created&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2014</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">58</span><span class="p">,</span> <span class="mi">949305</span><span class="p">),</span>
+    <span class="s">&quot;state&quot;</span><span class="p">:</span> <span class="s">&quot;open&quot;</span><span class="p">,</span> <span class="s">&quot;version&quot;</span><span class="p">:</span> <span class="il">0L</span><span class="p">,</span> <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;257bef44a9d848daa5b2563779714820&quot;</span>
+ <span class="p">}</span>
+</pre></div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Code</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>200</td>
+<td>Session created successfully</td>
+</tr>
+<tr class="row-odd"><td>401</td>
+<td>User is not authorized to access this session</td>
+</tr>
+<tr class="row-even"><td>403</td>
+<td>Could not open session for environment, environment has
+deploying status</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="deploy-session">
+<h3>Deploy Session<a class="headerlink" href="#deploy-session" title="Permalink to this headline">¶</a></h3>
+<p>With this request all local changes made within environment start to deploy on Openstack.</p>
+<p><em>Request</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="44%" />
+<col width="43%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>POST</td>
+<td>/environments/&lt;env_id&gt;/sessions/
+&lt;session_id&gt;/deploy</td>
+<td><dl class="first last docutils">
+<dt>Deploy changes made in session</dt>
+<dd>with specified session_id</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<p><em>Response</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Code</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>200</td>
+<td>Session status changes to <em>deploying</em></td>
+</tr>
+<tr class="row-odd"><td>401</td>
+<td>User is not authorized to access this session</td>
+</tr>
+<tr class="row-even"><td>403</td>
+<td>Session is already deployed or deployment is in progress</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="get-session-details">
+<h3>Get Session Details<a class="headerlink" href="#get-session-details" title="Permalink to this headline">¶</a></h3>
+<p><em>Request</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="47%" />
+<col width="39%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>GET</td>
+<td>/environments/&lt;env_id&gt;/sessions/
+&lt;session_id&gt;</td>
+<td>Get details about session
+with specified session_id</td>
+</tr>
+</tbody>
+</table>
+<p><em>Response</em></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+    <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;4aecdc2178b9430cbbb8db44fb7ac384&quot;</span><span class="p">,</span>
+    <span class="s">&quot;environment_id&quot;</span><span class="p">:</span> <span class="s">&quot;4dc8a2e8986fa8fa5bf24dc8a2e8986fa8&quot;</span><span class="p">,</span>
+    <span class="s">&quot;created&quot;</span><span class="p">:</span> <span class="s">&quot;2013-11-30T03:23:42Z&quot;</span><span class="p">,</span>
+    <span class="s">&quot;updated&quot;</span><span class="p">:</span> <span class="s">&quot;2013-11-30T03:23:54Z&quot;</span><span class="p">,</span>
+    <span class="s">&quot;user_id&quot;</span><span class="p">:</span> <span class="s">&quot;d7b501094caf4daab08469663a9e1a2b&quot;</span><span class="p">,</span>
+    <span class="s">&quot;version&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s">&quot;state&quot;</span><span class="p">:</span> <span class="s">&quot;deploying&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Code</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>200</td>
+<td>Session details information received</td>
+</tr>
+<tr class="row-odd"><td>401</td>
+<td>User is not authorized to access this session</td>
+</tr>
+<tr class="row-even"><td>403</td>
+<td>Session is invalid</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="delete-session">
+<h3>Delete Session<a class="headerlink" href="#delete-session" title="Permalink to this headline">¶</a></h3>
+<p><em>Request</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="43%" />
+<col width="44%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>DELETE</td>
+<td>/environments/&lt;env_id&gt;/sessions/
+&lt;session_id&gt;</td>
+<td>Delete session with specified
+session_id</td>
+</tr>
+</tbody>
+</table>
+<p><em>Response</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Code</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>200</td>
+<td>Session is deleted successfully</td>
+</tr>
+<tr class="row-odd"><td>401</td>
+<td>User is not authorized to access this session</td>
+</tr>
+<tr class="row-even"><td>403</td>
+<td>Session is in deploying state and could not be deleted</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="environment-deployments-api">
+<h2>Environment Deployments API<a class="headerlink" href="#environment-deployments-api" title="Permalink to this headline">¶</a></h2>
+<p>Environment deployment API allows to track changes of environment status, deployment events and errors.
+It also allows to browse deployment history.</p>
+<div class="section" id="list-deployments">
+<h3>List Deployments<a class="headerlink" href="#list-deployments" title="Permalink to this headline">¶</a></h3>
+<p>Returns information about all deployments of the specified environment.</p>
+<p><em>Request</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="12%" />
+<col width="43%" />
+<col width="45%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>GET</td>
+<td>/environments/&lt;env_id&gt;/deployments</td>
+<td>Get list of environment deployments</td>
+</tr>
+</tbody>
+</table>
+<p><em>Response</em></p>
+<dl class="docutils">
+<dt><strong>Content-Type</strong></dt>
+<dd>application/json</dd>
+</dl>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+    <span class="s">&quot;deployments&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s">&quot;updated&quot;</span><span class="p">:</span> <span class="s">&quot;2014-05-15T07:24:21&quot;</span><span class="p">,</span>
+            <span class="s">&quot;environment_id&quot;</span><span class="p">:</span> <span class="s">&quot;744e44812da84e858946f5d817de4f72&quot;</span><span class="p">,</span>
+            <span class="s">&quot;description&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s">&quot;services&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span>
+                        <span class="s">&quot;instance&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s">&quot;flavor&quot;</span><span class="p">:</span> <span class="s">&quot;m1.medium&quot;</span><span class="p">,</span>
+                            <span class="s">&quot;image&quot;</span><span class="p">:</span> <span class="s">&quot;cloud-fedora-v3&quot;</span><span class="p">,</span>
+                            <span class="s">&quot;?&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;io.murano.resources.Instance&quot;</span><span class="p">,</span>
+                                <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;ef729199-c71e-4a4c-a314-0340e279add8&quot;</span>
+                            <span class="p">},</span>
+                            <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;xkaduhv7qeg4m7&quot;</span>
+                        <span class="p">},</span>
+                        <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;teslnet1&quot;</span><span class="p">,</span>
+                        <span class="s">&quot;?&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s">&quot;_26411a1861294160833743e45d0eaad9&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;Telnet&quot;</span>
+                            <span class="p">},</span>
+                            <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;io.murano.apps.linux.Telnet&quot;</span><span class="p">,</span>
+                            <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;6e437be2-b5bc-4263-8814-6fd57d6ddbd5&quot;</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">],</span>
+                <span class="s">&quot;defaultNetworks&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s">&quot;environment&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;test2-network&quot;</span><span class="p">,</span>
+                        <span class="s">&quot;?&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;io.murano.lib.networks.neutron.NewNetwork&quot;</span><span class="p">,</span>
+                            <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;b6a1d515434047d5b4678a803646d556&quot;</span>
+                        <span class="p">}</span>
+                    <span class="p">},</span>
+                    <span class="s">&quot;flat&quot;</span><span class="p">:</span> <span class="n">null</span>
+                <span class="p">},</span>
+                <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;test2&quot;</span><span class="p">,</span>
+                <span class="s">&quot;?&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;io.murano.Environment&quot;</span><span class="p">,</span>
+                    <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;744e44812da84e858946f5d817de4f72&quot;</span>
+                <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="s">&quot;created&quot;</span><span class="p">:</span> <span class="s">&quot;2014-05-15T07:24:21&quot;</span><span class="p">,</span>
+            <span class="s">&quot;started&quot;</span><span class="p">:</span> <span class="s">&quot;2014-05-15T07:24:21&quot;</span><span class="p">,</span>
+            <span class="s">&quot;finished&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+            <span class="s">&quot;state&quot;</span><span class="p">:</span> <span class="s">&quot;running&quot;</span><span class="p">,</span>
+            <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;327c81e0e34a4c93ad9b9052ef42b752&quot;</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Code</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>200</td>
+<td>Deployments information received successfully</td>
+</tr>
+<tr class="row-odd"><td>401</td>
+<td>User is not authorized to access this environment</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="application-management-api">
+<h2>Application Management API<a class="headerlink" href="#application-management-api" title="Permalink to this headline">¶</a></h2>
+<p>All applications should be created within an environment and all environment modifications are held within the session.
+Local changes apply only after successful deployment of an environment session.</p>
+<div class="section" id="get-application-details">
+<h3>Get Application Details<a class="headerlink" href="#get-application-details" title="Permalink to this headline">¶</a></h3>
+<p>Using GET requests to applications endpoint user works with list containing all
+applications for specified environment. User can request whole list,
+specific application, or specific attribute of specific application using tree
+traversing. To request specific application, user should add to endpoint part
+an application id, e.g.: <em>/environments/&lt;env_id&gt;/services/&lt;application_id&gt;</em>. For
+selection of specific attribute on application, simply appending part with
+attribute name will work. For example to request application name, user
+should use next endpoint: <em>/environments/&lt;env_id&gt;/services/&lt;application_id&gt;/name</em></p>
+<p><em>Request</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="53%" />
+<col width="32%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+<th class="head">Header</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>GET</td>
+<td>/environments/&lt;env_id&gt;/services&lt;app_id&gt;</td>
+<td>X-Configuration-Session (optional)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Parameters:</strong></p>
+<ul class="simple">
+<li><cite>env_id</cite> - environment ID, required</li>
+<li><cite>app_id</cite> - application ID, optional</li>
+</ul>
+<p><em>Response</em></p>
+<dl class="docutils">
+<dt><strong>Content-Type</strong></dt>
+<dd>application/json</dd>
+</dl>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+    <span class="s">&quot;instance&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">&quot;flavor&quot;</span><span class="p">:</span> <span class="s">&quot;m1.medium&quot;</span><span class="p">,</span>
+        <span class="s">&quot;image&quot;</span><span class="p">:</span> <span class="s">&quot;cloud-fedora-v3&quot;</span><span class="p">,</span>
+        <span class="s">&quot;?&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;io.murano.resources.Instance&quot;</span><span class="p">,</span>
+            <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;060715ff-7908-4982-904b-3b2077ff55ef&quot;</span>
+        <span class="p">},</span>
+        <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;hbhmyhv6qihln3&quot;</span>
+    <span class="p">},</span>
+    <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;dfg34&quot;</span><span class="p">,</span>
+    <span class="s">&quot;?&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">&quot;status&quot;</span><span class="p">:</span> <span class="s">&quot;pending&quot;</span><span class="p">,</span>
+        <span class="s">&quot;_26411a1861294160833743e45d0eaad9&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;Telnet&quot;</span>
+        <span class="p">},</span>
+        <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;io.murano.apps.linux.Telnet&quot;</span><span class="p">,</span>
+        <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;6e7b8ad5-888d-4c5a-a498-076d092a7eff&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="post-applications">
+<h3>POST applications<a class="headerlink" href="#post-applications" title="Permalink to this headline">¶</a></h3>
+<p>New application can be added to the Murano environment using session.
+Result JSON is calculated in Murano dashboard, which based on <a class="reference external" href="DynamicUISpec">UI definition</a></p>
+<p><em>Request</em></p>
+<dl class="docutils">
+<dt><strong>Content-Type</strong></dt>
+<dd>application/json</dd>
+</dl>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="53%" />
+<col width="32%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+<th class="head">Header</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>POST</td>
+<td>/environments/&lt;env_id&gt;/services</td>
+<td>X-Configuration-Session</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+  <span class="s">&quot;instance&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s">&quot;flavor&quot;</span><span class="p">:</span> <span class="s">&quot;m1.medium&quot;</span><span class="p">,</span>
+    <span class="s">&quot;image&quot;</span><span class="p">:</span> <span class="s">&quot;clod-fedora-v3&quot;</span><span class="p">,</span>
+    <span class="s">&quot;?&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;io.murano.resources.Instance&quot;</span><span class="p">,</span>
+      <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;bce8308e-5938-408b-a27a-0d3f0a2c52eb&quot;</span>
+    <span class="p">},</span>
+    <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;nhekhv6r7mhd4&quot;</span>
+  <span class="p">},</span>
+  <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;sdf34sadf&quot;</span><span class="p">,</span>
+  <span class="s">&quot;?&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s">&quot;_26411a1861294160833743e45d0eaad9&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;Telnet&quot;</span>
+    <span class="p">},</span>
+    <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;io.murano.apps.linux.Telnet&quot;</span><span class="p">,</span>
+    <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;190c8705-5784-4782-83d7-0ab55a1449aa&quot;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><em>Response</em></p>
+<p>Created application returned</p>
+<dl class="docutils">
+<dt><strong>Content-Type</strong></dt>
+<dd>application/json</dd>
+</dl>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+    <span class="s">&quot;instance&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">&quot;flavor&quot;</span><span class="p">:</span> <span class="s">&quot;m1.medium&quot;</span><span class="p">,</span>
+        <span class="s">&quot;image&quot;</span><span class="p">:</span> <span class="s">&quot;cloud-fedora-v3&quot;</span><span class="p">,</span>
+        <span class="s">&quot;?&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;io.murano.resources.Instance&quot;</span><span class="p">,</span>
+            <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;bce8308e-5938-408b-a27a-0d3f0a2c52eb&quot;</span>
+        <span class="p">},</span>
+        <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;nhekhv6r7mhd4&quot;</span>
+    <span class="p">},</span>
+    <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;sdf34sadf&quot;</span><span class="p">,</span>
+    <span class="s">&quot;?&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">&quot;_26411a1861294160833743e45d0eaad9&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;Telnet&quot;</span>
+        <span class="p">},</span>
+        <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;io.murano.apps.linux.Telnet&quot;</span><span class="p">,</span>
+        <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;190c8705-5784-4782-83d7-0ab55a1449a1&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="delete-application-from-environment">
+<h3>Delete application from environment<a class="headerlink" href="#delete-application-from-environment" title="Permalink to this headline">¶</a></h3>
+<p>Delete one or all applications from the environment</p>
+<p><em>Request</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="54%" />
+<col width="32%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+<th class="head">Header</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>DELETE</td>
+<td>/environments/&lt;env_id&gt;/services/&lt;app_id&gt;</td>
+<td>X-Configuration-Session(optional)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Parameters:</strong></p>
+<ul class="simple">
+<li><cite>env_id</cite> - environment ID, required</li>
+<li><cite>app_id</cite> - application ID, optional</li>
+</ul>
+</div>
+</div>
+<div class="section" id="statistic-api">
+<h2>Statistic API<a class="headerlink" href="#statistic-api" title="Permalink to this headline">¶</a></h2>
+<p>Statistic API intends to provide billing feature</p>
+<div class="section" id="instance-environment-statistics">
+<h3>Instance Environment Statistics<a class="headerlink" href="#instance-environment-statistics" title="Permalink to this headline">¶</a></h3>
+<p><em>Request</em></p>
+<p>Get information about all deployed instances in the specified environment</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>GET</td>
+<td>/environments/&lt;env_id&gt;/instance-statistics/raw/&lt;instance_id&gt;</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Parameters:</strong></p>
+<ul class="simple">
+<li><cite>env_id</cite> - environment ID, required</li>
+<li><cite>instance_id</cite> - ID of the instance for which need to provide statistic information, optional</li>
+</ul>
+<p><em>Response</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="12%" />
+<col width="66%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>type</td>
+<td>int</td>
+<td>Code of the statistic object; 200 - instance, 100 - application</td>
+</tr>
+<tr class="row-odd"><td>type_name</td>
+<td>string</td>
+<td>Class name of the statistic object</td>
+</tr>
+<tr class="row-even"><td>instance_id</td>
+<td>string</td>
+<td>Id of deployed instance</td>
+</tr>
+<tr class="row-odd"><td>active</td>
+<td>bool</td>
+<td>Instance status</td>
+</tr>
+<tr class="row-even"><td>type_title</td>
+<td>string</td>
+<td>User-friendly name for browsing statistic in UI</td>
+</tr>
+<tr class="row-odd"><td>duration</td>
+<td>int</td>
+<td>Seconds of instance uptime</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt><strong>Content-Type</strong></dt>
+<dd>application/json</dd>
+</dl>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
+        <span class="s">&quot;type_name&quot;</span><span class="p">:</span> <span class="s">&quot;io.murano.resources.Instance&quot;</span><span class="p">,</span>
+        <span class="s">&quot;instance_id&quot;</span><span class="p">:</span> <span class="s">&quot;ef729199-c71e-4a4c-a314-0340e279add8&quot;</span><span class="p">,</span>
+        <span class="s">&quot;active&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+        <span class="s">&quot;type_title&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+        <span class="s">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">1053</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p><em>Request</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>GET</td>
+<td>/environments/&lt;env_id&gt;/instance-statistics/aggregated</td>
+</tr>
+</tbody>
+</table>
+<p><em>Response</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="12%" />
+<col width="66%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>type</td>
+<td>int</td>
+<td>Code of the statistic object; 200 - instance, 100 - application</td>
+</tr>
+<tr class="row-odd"><td>duration</td>
+<td>int</td>
+<td>Amount uptime of specified type objects</td>
+</tr>
+<tr class="row-even"><td>count</td>
+<td>int</td>
+<td>Quantity of specified type objects</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt><strong>Content-Type</strong></dt>
+<dd><blockquote class="first">
+<div>application/json</div></blockquote>
+<div class="last highlight-python"><div class="highlight"><pre><span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">720</span><span class="p">,</span>
+        <span class="s">&quot;count&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="mi">200</span>
+    <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</div>
+<div class="section" id="general-request-statistics">
+<h3>General Request Statistics<a class="headerlink" href="#general-request-statistics" title="Permalink to this headline">¶</a></h3>
+<p><em>Request</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="52%" />
+<col width="48%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>GET</td>
+<td>/stats</td>
+</tr>
+</tbody>
+</table>
+<p><em>Response</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="12%" />
+<col width="66%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>requests_per_tenant</td>
+<td>int</td>
+<td>Number of incoming requests for user tenant</td>
+</tr>
+<tr class="row-odd"><td>errors_per_second</td>
+<td>int</td>
+<td>Class name of the statistic object</td>
+</tr>
+<tr class="row-even"><td>errors_count</td>
+<td>int</td>
+<td>Class name of the statistic object</td>
+</tr>
+<tr class="row-odd"><td>requests_per_second</td>
+<td>float</td>
+<td>Average number of incoming request received in one second</td>
+</tr>
+<tr class="row-even"><td>requests_count</td>
+<td>int</td>
+<td>Number of all requests sent to the server</td>
+</tr>
+<tr class="row-odd"><td>cpu_percent</td>
+<td>bool</td>
+<td>Current cpu usage</td>
+</tr>
+<tr class="row-even"><td>cpu_count</td>
+<td>int</td>
+<td>Available cpu power is <tt class="docutils literal"><span class="pre">cpu_count</span> <span class="pre">*</span> <span class="pre">100%</span></tt></td>
+</tr>
+<tr class="row-odd"><td>host</td>
+<td>string</td>
+<td>Server host-name</td>
+</tr>
+<tr class="row-even"><td>average_response_time</td>
+<td>float</td>
+<td>Average time response waiting, seconds</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt><strong>Content-Type</strong></dt>
+<dd>application/json</dd>
+</dl>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s">&quot;updated&quot;</span><span class="p">:</span> <span class="s">&quot;2014-05-15T08:26:17&quot;</span><span class="p">,</span>
+        <span class="s">&quot;requests_per_tenant&quot;</span><span class="p">:</span> <span class="s">&quot;{</span><span class="se">\&quot;</span><span class="s">726ed856965f43cc8e565bc991fa76c3</span><span class="se">\&quot;</span><span class="s">: 313}&quot;</span><span class="p">,</span>
+        <span class="s">&quot;created&quot;</span><span class="p">:</span> <span class="s">&quot;2014-04-29T13:23:59&quot;</span><span class="p">,</span>
+        <span class="s">&quot;cpu_count&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s">&quot;errors_per_second&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s">&quot;requests_per_second&quot;</span><span class="p">:</span> <span class="mf">0.0266528</span><span class="p">,</span>
+        <span class="s">&quot;cpu_percent&quot;</span><span class="p">:</span> <span class="mf">21.7</span><span class="p">,</span>
+        <span class="s">&quot;host&quot;</span><span class="p">:</span> <span class="s">&quot;fervent-VirtualBox&quot;</span><span class="p">,</span>
+        <span class="s">&quot;error_count&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s">&quot;request_count&quot;</span><span class="p">:</span> <span class="mi">320</span><span class="p">,</span>
+        <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s">&quot;average_response_time&quot;</span><span class="p">:</span> <span class="mf">0.55942</span>
+    <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="application-catalog-api">
+<h2>Application Catalog API<a class="headerlink" href="#application-catalog-api" title="Permalink to this headline">¶</a></h2>
+<p>Manage application definitions in the Application Catalog.
+You can browse, edit and upload new application packages (.zip.package archive with all data that required for a service deployment).</p>
+</div>
+<div class="section" id="packages">
+<h2>Packages<a class="headerlink" href="#packages" title="Permalink to this headline">¶</a></h2>
+<p>Methods for application package management</p>
+<p><strong>Package Properties</strong></p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">id</span></tt>: guid of a package (<tt class="docutils literal"><span class="pre">fully_qualified_name</span></tt> can also be used for some API functions)</li>
+<li><tt class="docutils literal"><span class="pre">fully_qualified_name</span></tt>: fully qualified domain name -  domain name that specifies exact application location</li>
+<li><tt class="docutils literal"><span class="pre">name</span></tt>: user-friendly name</li>
+<li><tt class="docutils literal"><span class="pre">type</span></tt>: package type, &#8220;library&#8221; or &#8220;application&#8221;</li>
+<li><tt class="docutils literal"><span class="pre">description</span></tt>: text information about application</li>
+<li><tt class="docutils literal"><span class="pre">author</span></tt>: name of application author</li>
+<li><tt class="docutils literal"><span class="pre">tags</span></tt>: list of short names, connected with the package, which allows to search applications easily</li>
+<li><tt class="docutils literal"><span class="pre">categories</span></tt>: list of application categories</li>
+<li><tt class="docutils literal"><span class="pre">class_definition</span></tt>: list of class names used by a package</li>
+<li><tt class="docutils literal"><span class="pre">is_public</span></tt>: determines whether the package is shared for other tenants</li>
+<li><tt class="docutils literal"><span class="pre">enabled</span></tt>: determines whether the package is browsed in the Application Catalog</li>
+<li><tt class="docutils literal"><span class="pre">owner_id</span></tt>: id of a tenant that owns the package</li>
+</ul>
+<div class="section" id="list-packages">
+<h3>List packages<a class="headerlink" href="#list-packages" title="Permalink to this headline">¶</a></h3>
+<p><cite>/v1/catalog/packages?{marker}{limit}{order_by}{type}{category}{fqn}{owned}{catalog}{class_name} [GET]</cite></p>
+<p>This is the compound request to list and search through application catalog.
+If there are no search parameters all packages that is_public, enabled and belong to the user&#8217;s tenant will be listed.
+Default order is by &#8216;created&#8217; field.
+For an admin role all packages are available.</p>
+<p><strong>Parameters</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="8%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">catalog</span></tt></td>
+<td>bool</td>
+<td>If false (default) - search packages, that current user can edit (own for non-admin, all for admin)
+If true - search packages, that current user can deploy (i.e. his own + public)</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">marker</span></tt></td>
+<td>string</td>
+<td>A package identifier marker may be specified. When present only packages which occur after the identifier ID will be listed</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">limit</span></tt></td>
+<td>string</td>
+<td>When present the maximum number of results returned will not exceed the specified value.
+The typical pattern of limit and marker is to make an initial limited request and then to use the ID of the last package from
+the response as the marker parameter in a subsequent limited request.</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">order_by</span></tt></td>
+<td>string</td>
+<td>Allows to sort packages by: <cite>fqn</cite>, <cite>name</cite>, <cite>created</cite>. Created is default value.</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">type</span></tt></td>
+<td>string</td>
+<td>Allows to point a type of package: <cite>application</cite>, <cite>library</cite></td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">category</span></tt></td>
+<td>string</td>
+<td>Allows to point a categories for a search</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">fqn</span></tt></td>
+<td>string</td>
+<td>Allows to point a fully qualified package name for a search</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">owned</span></tt></td>
+<td>bool</td>
+<td>Search only from packages owned by current tenant</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">include_disabled</span></tt></td>
+<td>bool</td>
+<td>Include disabled packages in a the result</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">search</span></tt></td>
+<td>string</td>
+<td>Gives opportunity to search specified data by all the package parameters</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">class_name</span></tt></td>
+<td>string</td>
+<td>Search only for packages, that use specified class</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Response 200 (application/json)</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s">&quot;packages&quot;</span><span class="p">:</span> <span class="p">[</span>
+             <span class="p">{</span>
+               <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;fed57567c9fa42c192dcbe0566f8ea33&quot;</span><span class="p">,</span>
+                <span class="s">&quot;fully_qualified_name&quot;</span> <span class="p">:</span> <span class="s">&quot;com.example.murano.services.linux.telnet&quot;</span><span class="p">,</span>
+                <span class="s">&quot;is_public&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+                <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;Telnet&quot;</span><span class="p">,</span>
+                <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;linux&quot;</span><span class="p">,</span>
+                <span class="s">&quot;description&quot;</span><span class="p">:</span> <span class="s">&quot;Installs Telnet service&quot;</span><span class="p">,</span>
+                <span class="s">&quot;author&quot;</span><span class="p">:</span> <span class="s">&quot;Openstack, Inc.&quot;</span><span class="p">,</span>
+                <span class="s">&quot;created&quot;</span><span class="p">:</span> <span class="s">&quot;2014-04-02T14:31:55&quot;</span><span class="p">,</span>
+                <span class="s">&quot;enabled&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+                <span class="s">&quot;tags&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;linux&quot;</span><span class="p">,</span> <span class="s">&quot;telnet&quot;</span><span class="p">],</span>
+                <span class="s">&quot;categories&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;Utility&quot;</span><span class="p">],</span>
+                <span class="s">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s">&quot;fed57567c9fa42c192dcbe0566f8ea40&quot;</span>
+             <span class="p">},</span>
+             <span class="p">{</span>
+               <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;fed57567c9fa42c192dcbe0566f8ea31&quot;</span><span class="p">,</span>
+               <span class="s">&quot;fully_qualified_name&quot;</span><span class="p">:</span> <span class="s">&quot;com.example.murano.services.windows.WebServer&quot;</span><span class="p">,</span>
+               <span class="s">&quot;is_public&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+               <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;Internet Information Services&quot;</span><span class="p">,</span>
+               <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;windows&quot;</span><span class="p">,</span>
+               <span class="s">&quot;description&quot;</span><span class="p">:</span> <span class="s">&quot;The  Internet Information Service sets up an IIS server and joins it into an existing domain&quot;</span><span class="p">,</span>
+               <span class="s">&quot;author&quot;</span><span class="p">:</span> <span class="s">&quot;Openstack, Inc.&quot;</span><span class="p">,</span>
+               <span class="s">&quot;created&quot;</span><span class="p">:</span> <span class="s">&quot;2014-04-02T14:31:55&quot;</span><span class="p">,</span>
+               <span class="s">&quot;enabled&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+               <span class="s">&quot;tags&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;windows&quot;</span><span class="p">,</span> <span class="s">&quot;web&quot;</span><span class="p">],</span>
+               <span class="s">&quot;categories&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;Web&quot;</span><span class="p">],</span>
+               <span class="s">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s">&quot;fed57567c9fa42c192dcbe0566f8ea40&quot;</span>
+             <span class="p">}]</span>
+ <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="upload-a-new-package-post">
+<h3>Upload a new package[POST]<a class="headerlink" href="#upload-a-new-package-post" title="Permalink to this headline">¶</a></h3>
+<p><cite>/v1/catalog/packages</cite></p>
+<p>See the example of multipart/form-data request, It should contain two parts - text (json string) and file object</p>
+<p><strong>Request (multipart/form-data)</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Content-type: multipart/form-data, boundary=AaB03x
+Content-Length: $requestlen
+
+--AaB03x
+content-disposition: form-data; name=&quot;submit-name&quot;
+
+--AaB03x
+Content-Disposition: form-data; name=&quot;JsonString&quot;
+Content-Type: application/json
+
+{&quot;categories&quot;:[&quot;web&quot;] , &quot;tags&quot;: [&quot;windows&quot;], &quot;is_public&quot;: false, &quot;enabled&quot;: false}
+`categories` - array, required
+`tags` - array, optional
+`name` - string, optional
+`description` - string, optional
+`is_public` - bool, optional
+`enabled` - bool, optional
+
+--AaB03x
+content-disposition: file; name=&quot;file&quot;; filename=&quot;test.tar&quot;
+Content-Type: targz
+Content-Transfer-Encoding: binary
+
+$binarydata
+--AaB03x--
+</pre></div>
+</div>
+<p><strong>Response 200 (application/json)</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+    <span class="s">&quot;updated&quot;</span><span class="p">:</span> <span class="s">&quot;2014-04-03T13:00:13&quot;</span><span class="p">,</span>
+    <span class="s">&quot;description&quot;</span><span class="p">:</span> <span class="s">&quot;A domain service hosted in Windows environment by using Active Directory Role&quot;</span><span class="p">,</span>
+    <span class="s">&quot;tags&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;windows&quot;</span><span class="p">],</span>
+    <span class="s">&quot;is_public&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;8f4f09bd6bcb47fb968afd29aacc0dc9&quot;</span><span class="p">,</span>
+    <span class="s">&quot;categories&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;test1&quot;</span><span class="p">],</span>
+    <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;Active Directory&quot;</span><span class="p">,</span>
+    <span class="s">&quot;author&quot;</span><span class="p">:</span> <span class="s">&quot;Mirantis, Inc&quot;</span><span class="p">,</span>
+    <span class="s">&quot;created&quot;</span><span class="p">:</span> <span class="s">&quot;2014-04-03T13:00:13&quot;</span><span class="p">,</span>
+    <span class="s">&quot;enabled&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s">&quot;class_definition&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s">&quot;com.mirantis.murano.windows.activeDirectory.ActiveDirectory&quot;</span><span class="p">,</span>
+        <span class="s">&quot;com.mirantis.murano.windows.activeDirectory.SecondaryController&quot;</span><span class="p">,</span>
+        <span class="s">&quot;com.mirantis.murano.windows.activeDirectory.Controller&quot;</span><span class="p">,</span>
+        <span class="s">&quot;com.mirantis.murano.windows.activeDirectory.PrimaryController&quot;</span>
+    <span class="p">],</span>
+    <span class="s">&quot;fully_qualified_name&quot;</span><span class="p">:</span> <span class="s">&quot;com.mirantis.murano.windows.activeDirectory.ActiveDirectory&quot;</span><span class="p">,</span>
+    <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;Application&quot;</span><span class="p">,</span>
+    <span class="s">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s">&quot;fed57567c9fa42c192dcbe0566f8ea40&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="get-package-details">
+<h3>Get package details<a class="headerlink" href="#get-package-details" title="Permalink to this headline">¶</a></h3>
+<p><cite>/v1/catalog/packages/{id} [GET]</cite></p>
+<p>Display details for a package.</p>
+<p><strong>Parameters</strong></p>
+<p><tt class="docutils literal"><span class="pre">id</span></tt> (required)  Hexadecimal <cite>id</cite> (or fully qualified name) of the package</p>
+<p><strong>Response 200 (application/json)</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+    <span class="s">&quot;updated&quot;</span><span class="p">:</span> <span class="s">&quot;2014-04-03T13:00:13&quot;</span><span class="p">,</span>
+    <span class="s">&quot;description&quot;</span><span class="p">:</span> <span class="s">&quot;A domain service hosted in Windows environment by using Active Directory Role&quot;</span><span class="p">,</span>
+    <span class="s">&quot;tags&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;windows&quot;</span><span class="p">],</span>
+    <span class="s">&quot;is_public&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;8f4f09bd6bcb47fb968afd29aacc0dc9&quot;</span><span class="p">,</span>
+    <span class="s">&quot;categories&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;test1&quot;</span><span class="p">],</span>
+    <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;Active Directory&quot;</span><span class="p">,</span>
+    <span class="s">&quot;author&quot;</span><span class="p">:</span> <span class="s">&quot;Mirantis, Inc&quot;</span><span class="p">,</span>
+    <span class="s">&quot;created&quot;</span><span class="p">:</span> <span class="s">&quot;2014-04-03T13:00:13&quot;</span><span class="p">,</span>
+    <span class="s">&quot;enabled&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s">&quot;class_definition&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s">&quot;com.mirantis.murano.windows.activeDirectory.ActiveDirectory&quot;</span><span class="p">,</span>
+        <span class="s">&quot;com.mirantis.murano.windows.activeDirectory.SecondaryController&quot;</span><span class="p">,</span>
+        <span class="s">&quot;com.mirantis.murano.windows.activeDirectory.Controller&quot;</span><span class="p">,</span>
+        <span class="s">&quot;com.mirantis.murano.windows.activeDirectory.PrimaryController&quot;</span>
+    <span class="p">],</span>
+    <span class="s">&quot;fully_qualified_name&quot;</span><span class="p">:</span> <span class="s">&quot;com.mirantis.murano.windows.activeDirectory.ActiveDirectory&quot;</span><span class="p">,</span>
+    <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;Application&quot;</span><span class="p">,</span>
+    <span class="s">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s">&quot;fed57567c9fa42c192dcbe0566f8ea40&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Response 403</strong></p>
+<ul class="simple">
+<li>In attempt to get non-public package by user whose tenant is not an owner of this package.</li>
+</ul>
+<p><strong>Response 404</strong></p>
+<ul class="simple">
+<li>In case specified package id doesn&#8217;t exist.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="update-a-package">
+<h2>Update a Package<a class="headerlink" href="#update-a-package" title="Permalink to this headline">¶</a></h2>
+<p><cite>/v1/catalog/packages/{id} [PATCH]</cite></p>
+<p>Allows to edit mutable fields (categories, tags, name, description, is_public, enabled).
+See the full specification <a class="reference external" href="http://tools.ietf.org/html/rfc6902">here</a>.</p>
+<p><strong>Parameters</strong></p>
+<p><tt class="docutils literal"><span class="pre">id</span></tt> (required)  Hexadecimal <cite>id</cite> (or fully qualified name) of the package</p>
+<p><strong>Content type</strong></p>
+<p>application/murano-packages-json-patch</p>
+<p>Allowed operations:</p>
+<div class="highlight-python"><div class="highlight"><pre>[
+    { &quot;op&quot;: &quot;add&quot;, &quot;path&quot;: &quot;/tags&quot;, &quot;value&quot;: [ &quot;foo&quot;, &quot;bar&quot; ] },
+    { &quot;op&quot;: &quot;add&quot;, &quot;path&quot;: &quot;/categories&quot;, &quot;value&quot;: [ &quot;foo&quot;, &quot;bar&quot; ] },
+    { &quot;op&quot;: &quot;remove&quot;, &quot;path&quot;: &quot;/tags&quot;, [&quot;foo&quot;] },
+    { &quot;op&quot;: &quot;remove&quot;, &quot;path&quot;: &quot;/categories&quot;, [&quot;foo&quot;] },
+    { &quot;op&quot;: &quot;replace&quot;, &quot;path&quot;: &quot;/tags&quot;, &quot;value&quot;: [] },
+    { &quot;op&quot;: &quot;replace&quot;, &quot;path&quot;: &quot;/categories&quot;, &quot;value&quot;: [&quot;bar&quot;] },
+    { &quot;op&quot;: &quot;replace&quot;, &quot;path&quot;: &quot;/is_public&quot;, &quot;value&quot;: true },
+    { &quot;op&quot;: &quot;replace&quot;, &quot;path&quot;: &quot;/enabled&quot;, &quot;value&quot;: true },
+    { &quot;op&quot;: &quot;replace&quot;, &quot;path&quot;: &quot;/description&quot;, &quot;value&quot;:&quot;New description&quot; },
+    { &quot;op&quot;: &quot;replace&quot;, &quot;path&quot;: &quot;/name&quot;, &quot;value&quot;: &quot;New name&quot; }
+]
+</pre></div>
+</div>
+<p><strong>Request 200 (application/murano-packages-json-patch)</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span>
+ <span class="p">{</span> <span class="s">&quot;op&quot;</span><span class="p">:</span> <span class="s">&quot;add&quot;</span><span class="p">,</span> <span class="s">&quot;path&quot;</span><span class="p">:</span> <span class="s">&quot;/tags&quot;</span><span class="p">,</span> <span class="s">&quot;value&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="s">&quot;windows&quot;</span><span class="p">,</span> <span class="s">&quot;directory&quot;</span><span class="p">]</span> <span class="p">},</span>
+ <span class="p">{</span> <span class="s">&quot;op&quot;</span><span class="p">:</span> <span class="s">&quot;add&quot;</span><span class="p">,</span> <span class="s">&quot;path&quot;</span><span class="p">:</span> <span class="s">&quot;/categories&quot;</span><span class="p">,</span> <span class="s">&quot;value&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="s">&quot;Directory&quot;</span> <span class="p">]</span> <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>Response 200 (application/json)</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+    <span class="s">&quot;updated&quot;</span><span class="p">:</span> <span class="s">&quot;2014-04-03T13:00:13&quot;</span><span class="p">,</span>
+    <span class="s">&quot;description&quot;</span><span class="p">:</span> <span class="s">&quot;A domain service hosted in Windows environment by using Active Directory Role&quot;</span><span class="p">,</span>
+    <span class="s">&quot;tags&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;windows&quot;</span><span class="p">,</span> <span class="s">&quot;directory&quot;</span><span class="p">],</span>
+    <span class="s">&quot;is_public&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;8f4f09bd6bcb47fb968afd29aacc0dc9&quot;</span><span class="p">,</span>
+    <span class="s">&quot;categories&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;test1&quot;</span><span class="p">],</span>
+    <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;Active Directory&quot;</span><span class="p">,</span>
+    <span class="s">&quot;author&quot;</span><span class="p">:</span> <span class="s">&quot;Mirantis, Inc&quot;</span><span class="p">,</span>
+    <span class="s">&quot;created&quot;</span><span class="p">:</span> <span class="s">&quot;2014-04-03T13:00:13&quot;</span><span class="p">,</span>
+    <span class="s">&quot;enabled&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s">&quot;class_definition&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s">&quot;com.mirantis.murano.windows.activeDirectory.ActiveDirectory&quot;</span><span class="p">,</span>
+        <span class="s">&quot;com.mirantis.murano.windows.activeDirectory.SecondaryController&quot;</span><span class="p">,</span>
+        <span class="s">&quot;com.mirantis.murano.windows.activeDirectory.Controller&quot;</span><span class="p">,</span>
+        <span class="s">&quot;com.mirantis.murano.windows.activeDirectory.PrimaryController&quot;</span>
+    <span class="p">],</span>
+    <span class="s">&quot;fully_qualified_name&quot;</span><span class="p">:</span> <span class="s">&quot;com.mirantis.murano.windows.activeDirectory.ActiveDirectory&quot;</span><span class="p">,</span>
+    <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;Application&quot;</span><span class="p">,</span>
+    <span class="s">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s">&quot;fed57567c9fa42c192dcbe0566f8ea40&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Response 403</strong></p>
+<ul class="simple">
+<li>An attempt to update immutable fields</li>
+<li>An attempt to perform operation that is not allowed on the specified path</li>
+<li>An attempt to update non-public package by user whose tenant is not an owner of this package</li>
+</ul>
+<p><strong>Response 404</strong></p>
+<ul class="simple">
+<li>An attempt to update package that doesn&#8217;t exist</li>
+</ul>
+<div class="section" id="delete-application-definition-from-the-catalog">
+<h3>Delete application definition from the catalog<a class="headerlink" href="#delete-application-definition-from-the-catalog" title="Permalink to this headline">¶</a></h3>
+<p><cite>/v1/catalog/packages/{id} [DELETE]</cite></p>
+<p><strong>Parameters</strong></p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">id</span></tt> (required)  Hexadecimal <cite>id</cite> (or fully qualified name) of the package to delete</li>
+</ul>
+<p><strong>Response 404</strong></p>
+<ul class="simple">
+<li>An attempt to delete package that doesn&#8217;t exist</li>
+</ul>
+</div>
+<div class="section" id="get-application-package">
+<h3>Get application package<a class="headerlink" href="#get-application-package" title="Permalink to this headline">¶</a></h3>
+<p><cite>/v1/catalog/packages/{id}/download [GET]</cite></p>
+<p>Get application definition package</p>
+<p><strong>Parameters</strong></p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">id</span></tt> (required)  Hexadecimal <cite>id</cite> (or fully qualified name) of the package</li>
+</ul>
+<p><strong>Response 200 (application/octetstream)</strong></p>
+<p>The sequence of bytes representing package content</p>
+<p><strong>Response 404</strong></p>
+<p>Specified package id doesn&#8217;t exist</p>
+</div>
+<div class="section" id="get-ui-definition">
+<h3>Get UI definition<a class="headerlink" href="#get-ui-definition" title="Permalink to this headline">¶</a></h3>
+<p><cite>/v1/catalog/packages/{id}/ui [GET]</cite></p>
+<p>Retrieve UI definition for a application which described in a package with provided id</p>
+<p><strong>Parameters</strong></p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">id</span></tt> (required)  Hexadecimal <cite>id</cite> (or fully qualified name) of the package</li>
+</ul>
+<p><strong>Response 200 (application/octet-stream)</strong></p>
+<p>The sequence of bytes representing UI definition</p>
+<p><strong>Response 404</strong></p>
+<p>Specified package id doesn&#8217;t exist</p>
+<p><strong>Response 403</strong></p>
+<p>Specified package is not public and not owned by user tenant, performing the request</p>
+<p><strong>Response 404</strong></p>
+<ul class="simple">
+<li>Specified package id doesn&#8217;t exist</li>
+</ul>
+</div>
+<div class="section" id="get-logo">
+<h3>Get logo<a class="headerlink" href="#get-logo" title="Permalink to this headline">¶</a></h3>
+<p>Retrieve application logo which described in a package with provided id</p>
+<p><cite>/v1/catalog/packages/{id}/logo [GET]</cite></p>
+<p><strong>Parameters</strong></p>
+<p><tt class="docutils literal"><span class="pre">id</span></tt> (required)  Hexadecimal <cite>id</cite> (or fully qualified name) of the package</p>
+<p><strong>Response 200 (application/octet-stream)</strong></p>
+<p>The sequence of bytes representing application logo</p>
+<p><strong>Response 403</strong></p>
+<p>Specified package is not public and not owned by user tenant,
+performing the request</p>
+<p><strong>Response 404</strong></p>
+<p>Specified package is not public and not owned by user tenant,
+performing the request</p>
+</div>
+</div>
+<div class="section" id="categories">
+<h2>Categories<a class="headerlink" href="#categories" title="Permalink to this headline">¶</a></h2>
+<p>Provides category management. Categories are used in the Application Catalog
+to group application for easy browsing and search.</p>
+<div class="section" id="list-categories">
+<h3>List categories<a class="headerlink" href="#list-categories" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><cite>/v1/catalog/packages/categories [GET]</cite></li>
+</ul>
+<blockquote>
+<div><p>!DEPRECATED (Plan to remove in L release) Retrieve list of all available application categories</p>
+<p><strong>Response 200 (application/json)</strong></p>
+<p>A list, containing category names</p>
+<dl class="docutils">
+<dt><em>Content-Type</em></dt>
+<dd>application/json</dd>
+</dl>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+    <span class="s">&quot;categories&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;Web service&quot;</span><span class="p">,</span> <span class="s">&quot;Directory&quot;</span><span class="p">,</span> <span class="s">&quot;Database&quot;</span><span class="p">,</span> <span class="s">&quot;Storage&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div></blockquote>
+<ul class="simple">
+<li><cite>/v1/catalog/categories [GET]</cite></li>
+</ul>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="44%" />
+<col width="44%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>GET</td>
+<td>/catalog/categories</td>
+<td>Get list of existing categories</td>
+</tr>
+</tbody>
+</table>
+<p>Retrieve list of all available application categories</p>
+<p><strong>Response 200 (application/json)</strong></p>
+<p>A list, containing detailed information about each category</p>
+<dl class="docutils">
+<dt><em>Content-Type</em></dt>
+<dd>application/json</dd>
+</dl>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s">&quot;categories&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;0420045dce7445fabae7e5e61fff9e2f&quot;</span><span class="p">,</span>
+        <span class="s">&quot;updated&quot;</span><span class="p">:</span> <span class="s">&quot;2014-12-26T13:57:04&quot;</span><span class="p">,</span>
+        <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;Web&quot;</span><span class="p">,</span>
+        <span class="s">&quot;created&quot;</span><span class="p">:</span> <span class="s">&quot;2014-12-26T13:57:04&quot;</span><span class="p">,</span>
+        <span class="s">&quot;package_count&quot;</span><span class="p">:</span> <span class="mi">1</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;3dd486b1e26f40ac8f35416b63f52042&quot;</span><span class="p">,</span>
+        <span class="s">&quot;updated&quot;</span><span class="p">:</span> <span class="s">&quot;2014-12-26T13:57:04&quot;</span><span class="p">,</span>
+        <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;Databases&quot;</span><span class="p">,</span>
+        <span class="s">&quot;created&quot;</span><span class="p">:</span> <span class="s">&quot;2014-12-26T13:57:04&quot;</span><span class="p">,</span>
+        <span class="s">&quot;package_count&quot;</span><span class="p">:</span> <span class="mi">0</span>
+    <span class="p">}]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="get-category-details">
+<h3>Get category details<a class="headerlink" href="#get-category-details" title="Permalink to this headline">¶</a></h3>
+<p><cite>/catalog/categories/&lt;category_id&gt; [GET]</cite></p>
+<blockquote>
+<div>Return detailed information for a provided category</div></blockquote>
+<p><em>Request</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="44%" />
+<col width="43%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>GET</td>
+<td>/catalog/categories/&lt;category_id&gt;</td>
+<td>Get category detail</td>
+</tr>
+</tbody>
+</table>
+<p><em>Parameters</em></p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">category_id</span></tt> - required, category ID, required</li>
+</ul>
+<p><em>Response</em></p>
+<blockquote>
+<div><dl class="docutils">
+<dt><em>Content-Type</em></dt>
+<dd>application/json</dd>
+</dl>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+    <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;b308f7fa8a2f4a5eb419970c827f4466&quot;</span><span class="p">,</span>
+    <span class="s">&quot;updated&quot;</span><span class="p">:</span> <span class="s">&quot;2015-01-28T17:00:19&quot;</span><span class="p">,</span>
+    <span class="s">&quot;packages&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s">&quot;fully_qualified_name&quot;</span><span class="p">:</span> <span class="s">&quot;io.murano.apps.ZabbixServer&quot;</span><span class="p">,</span>
+            <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;4dfb566e69e6445fbd4aea5099fe95e9&quot;</span><span class="p">,</span>
+            <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;Zabbix Server&quot;</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;Web&quot;</span><span class="p">,</span>
+    <span class="s">&quot;created&quot;</span><span class="p">:</span> <span class="s">&quot;2015-01-28T17:00:19&quot;</span><span class="p">,</span>
+    <span class="s">&quot;package_count&quot;</span><span class="p">:</span> <span class="mi">1</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Code</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>200</td>
+<td>OK. Category deleted successfully</td>
+</tr>
+<tr class="row-odd"><td>401</td>
+<td>User is not authorized to access this session</td>
+</tr>
+<tr class="row-even"><td>404</td>
+<td>Not found. Specified category doesn`t exist</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="add-new-category">
+<h3>Add new category<a class="headerlink" href="#add-new-category" title="Permalink to this headline">¶</a></h3>
+<p><cite>/catalog/categories [POST]</cite></p>
+<blockquote>
+<div>Add new category to the Application Catalog</div></blockquote>
+<p><em>Parameters</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="24%" />
+<col width="13%" />
+<col width="62%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>name</td>
+<td>string</td>
+<td>Environment name; only alphanumeric characters and &#8216;-&#8216;</td>
+</tr>
+</tbody>
+</table>
+<p><em>Request</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="44%" />
+<col width="44%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>POST</td>
+<td>/catalog/categories</td>
+<td>Create new category</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<div><dl class="docutils">
+<dt><em>Content-Type</em></dt>
+<dd>application/json</dd>
+<dt><em>Example</em></dt>
+<dd>{&#8220;name&#8221;: &#8220;category_name&#8221;}</dd>
+</dl>
+</div></blockquote>
+<p><em>Response</em></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+    <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;ce373a477f211e187a55404a662f968&quot;</span><span class="p">,</span>
+    <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;category_name&quot;</span><span class="p">,</span>
+    <span class="s">&quot;created&quot;</span><span class="p">:</span> <span class="s">&quot;2013-11-30T03:23:42Z&quot;</span><span class="p">,</span>
+    <span class="s">&quot;updated&quot;</span><span class="p">:</span> <span class="s">&quot;2013-11-30T03:23:44Z&quot;</span><span class="p">,</span>
+    <span class="s">&quot;package_count&quot;</span><span class="p">:</span> <span class="mi">0</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Code</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>200</td>
+<td>OK. Category created successfully</td>
+</tr>
+<tr class="row-odd"><td>401</td>
+<td>User is not authorized to access this session</td>
+</tr>
+<tr class="row-even"><td>409</td>
+<td>Conflict. Category with specified name already exist</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="delete-category">
+<h3>Delete category<a class="headerlink" href="#delete-category" title="Permalink to this headline">¶</a></h3>
+<p><cite>/catalog/categories [DELETE]</cite></p>
+<p><em>Request</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="44%" />
+<col width="44%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>DELETE</td>
+<td>/catalog/categories/&lt;category_id&gt;</td>
+<td>Delete category with specified id</td>
+</tr>
+</tbody>
+</table>
+<p><em>Parameters:</em></p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">category_id</span></tt> - required, category ID, required</li>
+</ul>
+<p><em>Response</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Code</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>200</td>
+<td>OK. Category deleted successfully</td>
+</tr>
+<tr class="row-odd"><td>401</td>
+<td>User is not authorized to access this session</td>
+</tr>
+<tr class="row-even"><td>404</td>
+<td>Not found. Specified category doesn`t exist</td>
+</tr>
+<tr class="row-odd"><td>403</td>
+<td>Forbidden. Category with specified name is assigned to
+the package, presented in the catalog</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="environment-template-api">
+<h2>Environment Template API<a class="headerlink" href="#environment-template-api" title="Permalink to this headline">¶</a></h2>
+<p>Manage environment template definitions in Murano. It is possible to create, update, delete and deploy into Openstack by translating
+it into an environment. In addition, applications can be added or delete to the environment template.</p>
+<p><strong>Environment Template Properties</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="29%" />
+<col width="16%" />
+<col width="56%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>id</td>
+<td>string</td>
+<td>Unique ID</td>
+</tr>
+<tr class="row-odd"><td>name</td>
+<td>string</td>
+<td>User-friendly name</td>
+</tr>
+<tr class="row-even"><td>created</td>
+<td>datetime</td>
+<td>Creation date and time in ISO format</td>
+</tr>
+<tr class="row-odd"><td>updated</td>
+<td>datetime</td>
+<td>Modification date and time in ISO format</td>
+</tr>
+<tr class="row-even"><td>tenant_id</td>
+<td>string</td>
+<td>OpenStack tenant ID</td>
+</tr>
+<tr class="row-odd"><td>version</td>
+<td>int</td>
+<td>Current version</td>
+</tr>
+<tr class="row-even"><td>networking</td>
+<td>string</td>
+<td>Network settings</td>
+</tr>
+<tr class="row-odd"><td>description</td>
+<td>string</td>
+<td>The environment template specification</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Common response codes</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Code</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>200</td>
+<td>Operation completed successfully</td>
+</tr>
+<tr class="row-odd"><td>401</td>
+<td>User is not authorized to perform the operation</td>
+</tr>
+</tbody>
+</table>
+<p>Methods for Environment Template API</p>
+<div class="section" id="list-environments-templates">
+<h3>List Environments Templates<a class="headerlink" href="#list-environments-templates" title="Permalink to this headline">¶</a></h3>
+<p><em>Request</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="44%" />
+<col width="44%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>GET</td>
+<td>/templates</td>
+<td>Get a list of existing
+environment templates</td>
+</tr>
+</tbody>
+</table>
+<p><em>Response</em></p>
+<p>This call returns list of environment templates. Only the basic properties are
+returned.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+    <span class="s">&quot;templates&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s">&quot;updated&quot;</span><span class="p">:</span> <span class="s">&quot;2014-05-14T13:02:54&quot;</span><span class="p">,</span>
+            <span class="s">&quot;networking&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;test1&quot;</span><span class="p">,</span>
+            <span class="s">&quot;created&quot;</span><span class="p">:</span> <span class="s">&quot;2014-05-14T13:02:46&quot;</span><span class="p">,</span>
+            <span class="s">&quot;tenant_id&quot;</span><span class="p">:</span> <span class="s">&quot;726ed856965f43cc8e565bc991fa76c3&quot;</span><span class="p">,</span>
+            <span class="s">&quot;version&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;2fa5ab704749444bbeafe7991b412c33&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s">&quot;updated&quot;</span><span class="p">:</span> <span class="s">&quot;2014-05-14T13:02:55&quot;</span><span class="p">,</span>
+            <span class="s">&quot;networking&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;test2&quot;</span><span class="p">,</span>
+            <span class="s">&quot;created&quot;</span><span class="p">:</span> <span class="s">&quot;2014-05-14T13:02:51&quot;</span><span class="p">,</span>
+            <span class="s">&quot;tenant_id&quot;</span><span class="p">:</span> <span class="s">&quot;726ed856965f43cc8e565bc991fa76c3&quot;</span><span class="p">,</span>
+            <span class="s">&quot;version&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;744e44812da84e858946f5d817de4f72&quot;</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="create-environment-template">
+<h3>Create Environment Template<a class="headerlink" href="#create-environment-template" title="Permalink to this headline">¶</a></h3>
+<p><em>Request</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="40%" />
+<col width="48%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>POST</td>
+<td>/templates</td>
+<td>Create a new environment template</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt><em>Content-Type</em></dt>
+<dd>application/json</dd>
+<dt><em>Example</em></dt>
+<dd>{&#8220;name&#8221;: &#8220;env_temp_name&#8221;}</dd>
+</dl>
+<p><em>Response</em></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+    <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;ce373a477f211e187a55404a662f968&quot;</span><span class="p">,</span>
+    <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;env_temp_name&quot;</span><span class="p">,</span>
+    <span class="s">&quot;created&quot;</span><span class="p">:</span> <span class="s">&quot;2013-11-30T03:23:42Z&quot;</span><span class="p">,</span>
+    <span class="s">&quot;updated&quot;</span><span class="p">:</span> <span class="s">&quot;2013-11-30T03:23:44Z&quot;</span><span class="p">,</span>
+    <span class="s">&quot;tenant_id&quot;</span><span class="p">:</span> <span class="s">&quot;0849006f7ce94961b3aab4e46d6f229a&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><em>Error code</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Code</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>200</td>
+<td>Operation completed successfully</td>
+</tr>
+<tr class="row-odd"><td>401</td>
+<td>User is not authorized to perform the operation</td>
+</tr>
+<tr class="row-even"><td>409</td>
+<td>The environment template already exists</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="get-environment-templates-details">
+<h3>Get Environment Templates Details<a class="headerlink" href="#get-environment-templates-details" title="Permalink to this headline">¶</a></h3>
+<p><em>Request</em></p>
+<p>Return information about environment template itself and about applications, including to this
+environment template.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="11%" />
+<col width="35%" />
+<col width="54%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>GET</td>
+<td>/templates/{env-temp-id}</td>
+<td>Obtains the enviroment template information</td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li><cite>env-temp-id</cite> - environment template ID, required</li>
+</ul>
+<p><em>Response</em></p>
+<dl class="docutils">
+<dt><em>Content-Type</em></dt>
+<dd>application/json</dd>
+</dl>
+<div class="highlight-python"><div class="highlight"><pre> {
+   &quot;updated&quot;: &quot;2015-01-26T09:12:51&quot;,
+   &quot;networking&quot;:
+   {
+   },
+   &quot;name&quot;: &quot;template_name&quot;,
+   &quot;created&quot;: &quot;2015-01-26T09:12:51&quot;,
+   &quot;tenant_id&quot;: &quot;00000000000000000000000000000001&quot;,
+   &quot;version&quot;: 0,
+   &quot;id&quot;: &quot;aa9033ca7ce245fca10e38e1c8c4bbf7&quot;,
+}
+</pre></div>
+</div>
+<p><em>Error code</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Code</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>200</td>
+<td>OK. Environment Template created successfully</td>
+</tr>
+<tr class="row-odd"><td>401</td>
+<td>User is not authorized to access this session</td>
+</tr>
+<tr class="row-even"><td>404</td>
+<td>The environment template does not exit</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="delete-environment-template">
+<h3>Delete Environment Template<a class="headerlink" href="#delete-environment-template" title="Permalink to this headline">¶</a></h3>
+<p><em>Request</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="44%" />
+<col width="44%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>DELETE</td>
+<td>/templates/&lt;env-temp-id&gt;</td>
+<td>Delete the template id</td>
+</tr>
+</tbody>
+</table>
+<p><em>Parameters:</em></p>
+<ul class="simple">
+<li><cite>env-temp_id</cite> - environment template ID, required</li>
+</ul>
+<p><em>Error code</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Code</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>200</td>
+<td>OK. Environment Template created successfully</td>
+</tr>
+<tr class="row-odd"><td>401</td>
+<td>User is not authorized to access this session</td>
+</tr>
+<tr class="row-even"><td>404</td>
+<td>The environment template does not exit</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="adding-application-to-environment-template">
+<h3>Adding application to environment template<a class="headerlink" href="#adding-application-to-environment-template" title="Permalink to this headline">¶</a></h3>
+<p><em>Request</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="45%" />
+<col width="43%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head">URI</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>POST</td>
+<td>/templates/{env-temp-id}/services</td>
+<td>Create a new application</td>
+</tr>
+</tbody>
+</table>
+<p><em>Parameters:</em></p>
+<ul class="simple">
+<li><cite>env-temp-id</cite> - The environment-template id, required</li>
+<li>payload - the service description</li>
+</ul>
+<dl class="docutils">
+<dt><em>Content-Type</em></dt>
+<dd>application/json</dd>
+</dl>
+<p><em>Example</em></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+    <span class="s">&quot;instance&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">&quot;assignFloatingIp&quot;</span><span class="p">:</span> <span class="s">&quot;true&quot;</span><span class="p">,</span>
+        <span class="s">&quot;keyname&quot;</span><span class="p">:</span> <span class="s">&quot;mykeyname&quot;</span><span class="p">,</span>
+        <span class="s">&quot;image&quot;</span><span class="p">:</span> <span class="s">&quot;cloud-fedora-v3&quot;</span><span class="p">,</span>
+        <span class="s">&quot;flavor&quot;</span><span class="p">:</span> <span class="s">&quot;m1.medium&quot;</span><span class="p">,</span>
+        <span class="s">&quot;?&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;io.murano.resources.LinuxMuranoInstance&quot;</span><span class="p">,</span>
+            <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;ef984a74-29a4-45c0-b1dc-2ab9f075732e&quot;</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;orion&quot;</span><span class="p">,</span>
+    <span class="s">&quot;port&quot;</span><span class="p">:</span> <span class="s">&quot;8080&quot;</span><span class="p">,</span>
+    <span class="s">&quot;?&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;io.murano.apps.apache.Tomcat&quot;</span><span class="p">,</span>
+        <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;54cea43d-5970-4c73-b9ac-fea656f3c722&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><em>Response</em></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+   <span class="s">&quot;instance&quot;</span><span class="p">:</span>
+   <span class="p">{</span>
+       <span class="s">&quot;assignFloatingIp&quot;</span><span class="p">:</span> <span class="s">&quot;true&quot;</span><span class="p">,</span>
+       <span class="s">&quot;keyname&quot;</span><span class="p">:</span> <span class="s">&quot;mykeyname&quot;</span><span class="p">,</span>
+       <span class="s">&quot;image&quot;</span><span class="p">:</span> <span class="s">&quot;cloud-fedora-v3&quot;</span><span class="p">,</span>
+       <span class="s">&quot;flavor&quot;</span><span class="p">:</span> <span class="s">&quot;m1.medium&quot;</span><span class="p">,</span>
+       <span class="s">&quot;?&quot;</span><span class="p">:</span>
+       <span class="p">{</span>
+           <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;io.murano.resources.LinuxMuranoInstance&quot;</span><span class="p">,</span>
+           <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;ef984a74-29a4-45c0-b1dc-2ab9f075732e&quot;</span>
+       <span class="p">}</span>
+   <span class="p">},</span>
+   <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;orion&quot;</span><span class="p">,</span>
+   <span class="s">&quot;?&quot;</span><span class="p">:</span>
+   <span class="p">{</span>
+       <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;io.murano.apps.apache.Tomcat&quot;</span><span class="p">,</span>
+       <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;54cea43d-5970-4c73-b9ac-fea656f3c722&quot;</span>
+   <span class="p">},</span>
+   <span class="s">&quot;port&quot;</span><span class="p">:</span> <span class="s">&quot;8080&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><em>Error code</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Code</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>200</td>
+<td>OK. Environment Template created successfully</td>
+</tr>
+<tr class="row-odd"><td>401</td>
+<td>User is not authorized to access this session</td>
+</tr>
+<tr class="row-even"><td>404</td>
+<td>The environment template does not exit</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="get-applications-information-from-an-environment-template">
+<h3>Get applications information from an environment template<a class="headerlink" href="#get-applications-information-from-an-environment-template" title="Permalink to this headline">¶</a></h3>
+<p><em>Request</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="12%" />
+<col width="44%" />
+<col width="0%" />
+<col width="43%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head" colspan="3">URI                                 | Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>GET</td>
+<td colspan="3">/templates/{env-temp-id}/services   | It obtains the service description</td>
+</tr>
+</tbody>
+</table>
+<p><em>Parameters:</em></p>
+<ul class="simple">
+<li><cite>env-temp-id</cite> - The environment template ID, required</li>
+</ul>
+<dl class="docutils">
+<dt><em>Content-Type</em></dt>
+<dd>application/json</dd>
+</dl>
+<p><em>Response</em></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span>
+   <span class="p">{</span>
+       <span class="s">&quot;instance&quot;</span><span class="p">:</span>
+       <span class="p">{</span>
+           <span class="s">&quot;assignFloatingIp&quot;</span><span class="p">:</span> <span class="s">&quot;true&quot;</span><span class="p">,</span>
+           <span class="s">&quot;keyname&quot;</span><span class="p">:</span> <span class="s">&quot;mykeyname&quot;</span><span class="p">,</span>
+           <span class="s">&quot;image&quot;</span><span class="p">:</span> <span class="s">&quot;cloud-fedora-v3&quot;</span><span class="p">,</span>
+           <span class="s">&quot;flavor&quot;</span><span class="p">:</span> <span class="s">&quot;m1.medium&quot;</span><span class="p">,</span>
+           <span class="s">&quot;?&quot;</span><span class="p">:</span>
+           <span class="p">{</span>
+               <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;io.murano.resources.LinuxMuranoInstance&quot;</span><span class="p">,</span>
+               <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;ef984a74-29a4-45c0-b1dc-2ab9f075732e&quot;</span>
+           <span class="p">}</span>
+       <span class="p">},</span>
+       <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;tomcat&quot;</span><span class="p">,</span>
+       <span class="s">&quot;?&quot;</span><span class="p">:</span>
+       <span class="p">{</span>
+           <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;io.murano.apps.apache.Tomcat&quot;</span><span class="p">,</span>
+           <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;54cea43d-5970-4c73-b9ac-fea656f3c722&quot;</span>
+       <span class="p">},</span>
+       <span class="s">&quot;port&quot;</span><span class="p">:</span> <span class="s">&quot;8080&quot;</span>
+   <span class="p">},</span>
+   <span class="p">{</span>
+       <span class="s">&quot;instance&quot;</span><span class="p">:</span> <span class="s">&quot;ef984a74-29a4-45c0-b1dc-2ab9f075732e&quot;</span><span class="p">,</span>
+       <span class="s">&quot;password&quot;</span><span class="p">:</span> <span class="s">&quot;XXX&quot;</span><span class="p">,</span>
+       <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;mysql&quot;</span><span class="p">,</span>
+       <span class="s">&quot;?&quot;</span><span class="p">:</span>
+       <span class="p">{</span>
+           <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;io.murano.apps.database.MySQL&quot;</span><span class="p">,</span>
+           <span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="s">&quot;54cea43d-5970-4c73-b9ac-fea656f3c722&quot;</span>
+       <span class="p">}</span>
+   <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p><em>Error code</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Code</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>200</td>
+<td>OK. Environment Template created successfully</td>
+</tr>
+<tr class="row-odd"><td>401</td>
+<td>User is not authorized to access this session</td>
+</tr>
+<tr class="row-even"><td>404</td>
+<td>The environment template does not exit</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="create-an-environment-from-an-environment-template">
+<h3>Create an environment from an environment template<a class="headerlink" href="#create-an-environment-from-an-environment-template" title="Permalink to this headline">¶</a></h3>
+<p><em>Request</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="11%" />
+<col width="35%" />
+<col width="12%" />
+<col width="42%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method</th>
+<th class="head" colspan="3">URI                                        | Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>POST</td>
+<td colspan="3">/templates/{env-temp-id}/create-environment| Create an environment</td>
+</tr>
+</tbody>
+</table>
+<p><em>Parameters:</em></p>
+<ul class="simple">
+<li><cite>env-temp-id</cite> - The environment template ID, required</li>
+</ul>
+<p><em>Payload:</em></p>
+<ul class="simple">
+<li>&#8216;environment name&#8217;: The environment name to be created.</li>
+</ul>
+<dl class="docutils">
+<dt><em>Content-Type</em></dt>
+<dd>application/json</dd>
+</dl>
+<p><em>Example</em></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+    <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;environment_name&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><em>Response</em></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+    <span class="s">&quot;environment_id&quot;</span><span class="p">:</span> <span class="s">&quot;aa90fadfafca10e38e1c8c4bbf7&quot;</span><span class="p">,</span>
+    <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;environment_name&quot;</span><span class="p">,</span>
+    <span class="s">&quot;created&quot;</span><span class="p">:</span> <span class="s">&quot;2015-01-26T09:12:51&quot;</span><span class="p">,</span>
+    <span class="s">&quot;tenant_id&quot;</span><span class="p">:</span> <span class="s">&quot;00000000000000000000000000000001&quot;</span><span class="p">,</span>
+    <span class="s">&quot;version&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s">&quot;session_id&quot;</span><span class="p">:</span> <span class="s">&quot;adf4dadfaa9033ca7ce245fca10e38e1c8c4bbf7&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><em>Error code</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Code</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>200</td>
+<td>OK. Environment template created successfully</td>
+</tr>
+<tr class="row-odd"><td>401</td>
+<td>User is not authorized to access this session</td>
+</tr>
+<tr class="row-even"><td>404</td>
+<td>The environment template does not exit</td>
+</tr>
+<tr class="row-odd"><td>409</td>
+<td>The environment already exists</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Murano API v1 specification</a><ul>
+<li><a class="reference internal" href="#general-information">General information</a></li>
+<li><a class="reference internal" href="#glossary">Glossary</a></li>
+<li><a class="reference internal" href="#environment-api">Environment API</a><ul>
+<li><a class="reference internal" href="#list-environments">List Environments</a></li>
+<li><a class="reference internal" href="#create-environment">Create Environment</a></li>
+<li><a class="reference internal" href="#update-environment">Update Environment</a></li>
+<li><a class="reference internal" href="#get-environment-details">Get Environment Details</a></li>
+<li><a class="reference internal" href="#delete-environment">Delete Environment</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#environment-configuration-api">Environment Configuration API</a><ul>
+<li><a class="reference internal" href="#configure-environment-open-session">Configure Environment / Open session</a></li>
+<li><a class="reference internal" href="#deploy-session">Deploy Session</a></li>
+<li><a class="reference internal" href="#get-session-details">Get Session Details</a></li>
+<li><a class="reference internal" href="#delete-session">Delete Session</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#environment-deployments-api">Environment Deployments API</a><ul>
+<li><a class="reference internal" href="#list-deployments">List Deployments</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#application-management-api">Application Management API</a><ul>
+<li><a class="reference internal" href="#get-application-details">Get Application Details</a></li>
+<li><a class="reference internal" href="#post-applications">POST applications</a></li>
+<li><a class="reference internal" href="#delete-application-from-environment">Delete application from environment</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#statistic-api">Statistic API</a><ul>
+<li><a class="reference internal" href="#instance-environment-statistics">Instance Environment Statistics</a></li>
+<li><a class="reference internal" href="#general-request-statistics">General Request Statistics</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#application-catalog-api">Application Catalog API</a></li>
+<li><a class="reference internal" href="#packages">Packages</a><ul>
+<li><a class="reference internal" href="#list-packages">List packages</a></li>
+<li><a class="reference internal" href="#upload-a-new-package-post">Upload a new package[POST]</a></li>
+<li><a class="reference internal" href="#get-package-details">Get package details</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#update-a-package">Update a Package</a><ul>
+<li><a class="reference internal" href="#delete-application-definition-from-the-catalog">Delete application definition from the catalog</a></li>
+<li><a class="reference internal" href="#get-application-package">Get application package</a></li>
+<li><a class="reference internal" href="#get-ui-definition">Get UI definition</a></li>
+<li><a class="reference internal" href="#get-logo">Get logo</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#categories">Categories</a><ul>
+<li><a class="reference internal" href="#list-categories">List categories</a></li>
+<li><a class="reference internal" href="#get-category-details">Get category details</a></li>
+<li><a class="reference internal" href="#add-new-category">Add new category</a></li>
+<li><a class="reference internal" href="#delete-category">Delete category</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#environment-template-api">Environment Template API</a><ul>
+<li><a class="reference internal" href="#list-environments-templates">List Environments Templates</a></li>
+<li><a class="reference internal" href="#create-environment-template">Create Environment Template</a></li>
+<li><a class="reference internal" href="#get-environment-templates-details">Get Environment Templates Details</a></li>
+<li><a class="reference internal" href="#delete-environment-template">Delete Environment Template</a></li>
+<li><a class="reference internal" href="#adding-application-to-environment-template">Adding application to environment template</a></li>
+<li><a class="reference internal" href="#get-applications-information-from-an-environment-template">Get applications information from an environment template</a></li>
+<li><a class="reference internal" href="#create-an-environment-from-an-environment-template">Create an environment from an environment template</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="../articles/app_migrating.html"
+                                  title="previous chapter">Migrating applications from Murano v0.5 to Stable/Juno</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/specification/index.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../articles/app_migrating.html" title="Migrating applications from Murano v0.5 to Stable/Juno"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Murano</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Wed Apr 29 17:52:18 2015, commit 9c804c9.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

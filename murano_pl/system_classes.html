@@ -1,0 +1,200 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Murano PL System Class Definitions &mdash; Murano</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.0.dev20',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Murano" href="../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="murano-pl-system-class-definitions">
+<span id="class-definitions"></span><h1>Murano PL System Class Definitions<a class="headerlink" href="#murano-pl-system-class-definitions" title="Permalink to this headline">¶</a></h1>
+<p>Murano program language has system classes, which make deploying process as convenient as it could be.
+System classes are used in user class definitions for a custom applications. This article is going to help users to operate with Murano PL classes without any issues.
+All classes are located in the murano-engine component and don`t require particular import.</p>
+<ul class="simple">
+<li><a class="reference internal" href="#io-murano-system-resources"><em>io.murano.system.Resources</em></a></li>
+<li><a class="reference internal" href="#io-murano-system-agent"><em>io.murano.system.Agent</em></a></li>
+<li><a class="reference internal" href="#io-murano-system-agentlistener"><em>io.murano.system.AgentListener</em></a></li>
+<li><a class="reference internal" href="#io-murano-system-heatstack"><em>io.murano.system.HeatStack</em></a></li>
+<li><a class="reference internal" href="#io-murano-system-instancenotifier"><em>io.murano.system.InstanceNotifier</em></a></li>
+<li><a class="reference internal" href="#io-murano-system-networkexplorer"><em>io.murano.system.NetworkExplorer</em></a></li>
+<li><a class="reference internal" href="#io-murano-system-statusreporter"><em>io.murano.system.StatusReporter</em></a></li>
+</ul>
+<div class="section" id="io-murano-system-resources">
+<span id="id1"></span><h2>io.murano.system.Resources<a class="headerlink" href="#io-murano-system-resources" title="Permalink to this headline">¶</a></h2>
+<p>Used to provide API to all files, located in the Resource directory of application package. Those Resources usually used in an application deployment and needed to be specified in a workflow definition.
+Available methods:</p>
+<ul class="simple">
+<li><em>yaml</em> return resource file in yaml format</li>
+<li><em>string</em> return resource file as string</li>
+<li><em>json</em> return resource in json format</li>
+</ul>
+</div>
+<div class="section" id="io-murano-system-agent">
+<span id="id2"></span><h2>io.murano.system.Agent<a class="headerlink" href="#io-murano-system-agent" title="Permalink to this headline">¶</a></h2>
+<p>Defines Murano Agent and ways of interacting with it.
+Available methods:</p>
+<ul class="simple">
+<li><em>call(template, resources)</em> - send an execution plan template and resource object, and wait for an operation to complete</li>
+<li><em>send(template, resources)</em> - send execution plan template and resource class instance and continue execution without waiting for an end of the execution</li>
+<li><em>callRaw(plan)</em> - send ready-to-perform murano agent execution plan and wait for an operation to complete</li>
+<li><em>sendRaw(plan)</em> - send ready-to-perform murano agent execution plan and continue workflow execution</li>
+<li><em>queueName()</em> - returns name of the queue with which Agent is working</li>
+</ul>
+</div>
+<div class="section" id="io-murano-system-agentlistener">
+<span id="id3"></span><h2>io.murano.system.AgentListener<a class="headerlink" href="#io-murano-system-agentlistener" title="Permalink to this headline">¶</a></h2>
+<p>Used for monitoring Murano Agent.</p>
+<ul class="simple">
+<li><em>start()</em> - start to monitor Murano Agent activity</li>
+<li><em>stop()</em> - stop to monitor Murano Agent activity</li>
+<li><em>subscribe(message_id, event)</em> - subscribe to the specified Agent event</li>
+<li><em>queueName()</em> - returns name of the queue with which Agent is working</li>
+</ul>
+</div>
+<div class="section" id="io-murano-system-heatstack">
+<span id="id4"></span><h2>io.murano.system.HeatStack<a class="headerlink" href="#io-murano-system-heatstack" title="Permalink to this headline">¶</a></h2>
+<p>Manage Heat stack operations.</p>
+<ul class="simple">
+<li><em>current()</em> - returns current heat template</li>
+<li><em>parameters()</em> - returns heat template parameters</li>
+<li><em>reload()</em> - reload heat template</li>
+<li><em>setTemplate(template)</em> - load heat template</li>
+<li><em>updateTemplate(template)</em> - update current template with the specified part of heat stack</li>
+<li><em>output()</em> - result of heat template execution</li>
+<li><em>push()</em> - commit changes (requires after setTemplate and updateTemplate operations)</li>
+<li><em>delete()</em> - delete current heat stack</li>
+</ul>
+</div>
+<div class="section" id="io-murano-system-instancenotifier">
+<span id="id5"></span><h2>io.murano.system.InstanceNotifier<a class="headerlink" href="#io-murano-system-instancenotifier" title="Permalink to this headline">¶</a></h2>
+<p>Monitor application and instance statistics to provide billing feature.</p>
+<ul class="simple">
+<li><em>trackApplication(instance,</em> <tt class="docutils literal"><span class="pre">title</span></tt>, <tt class="docutils literal"><span class="pre">unitCount</span></tt>) - start to monitor an application activity; title, unitCount - are optional</li>
+<li><em>untrackApplication(instance)</em> - stop to monitor an application activity</li>
+<li><em>trackCloudInstance(instance)</em> -  start to monitor an instance activity</li>
+<li><em>untrackCloudInstance(instance)</em> - stop to monitor an instance activity</li>
+</ul>
+</div>
+<div class="section" id="io-murano-system-networkexplorer">
+<span id="id6"></span><h2>io.murano.system.NetworkExplorer<a class="headerlink" href="#io-murano-system-networkexplorer" title="Permalink to this headline">¶</a></h2>
+<p>Determines and configures network topology.</p>
+<ul class="simple">
+<li><em>getDefaultRouter()</em> - determine default router</li>
+<li><em>getAvailableCidr(routerId, netId)</em> - searching for non-allocated CIDR</li>
+<li><em>getDefaultDns()</em> - get dns from config file</li>
+<li><em>getExternalNetworkIdForRouter(routerId)</em> - Check for router connected to the external network</li>
+<li><em>getExternalNetworkIdForNetwork(networkId)</em> - For each router this network is connected to check whether the router has external_gateway set</li>
+</ul>
+</div>
+<div class="section" id="io-murano-system-statusreporter">
+<span id="id7"></span><h2>io.murano.system.StatusReporter<a class="headerlink" href="#io-murano-system-statusreporter" title="Permalink to this headline">¶</a></h2>
+<p>Provides feedback feature. To follow the deployment process in the UI, all status changes should be included in the application configuration.</p>
+<ul class="simple">
+<li><em>report(instance, msg)</em> - Send message about an application deployment process</li>
+<li><em>report_error(instance, msg)</em> - Report an error during an application deployment process</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Murano PL System Class Definitions</a><ul>
+<li><a class="reference internal" href="#io-murano-system-resources">io.murano.system.Resources</a></li>
+<li><a class="reference internal" href="#io-murano-system-agent">io.murano.system.Agent</a></li>
+<li><a class="reference internal" href="#io-murano-system-agentlistener">io.murano.system.AgentListener</a></li>
+<li><a class="reference internal" href="#io-murano-system-heatstack">io.murano.system.HeatStack</a></li>
+<li><a class="reference internal" href="#io-murano-system-instancenotifier">io.murano.system.InstanceNotifier</a></li>
+<li><a class="reference internal" href="#io-murano-system-networkexplorer">io.murano.system.NetworkExplorer</a></li>
+<li><a class="reference internal" href="#io-murano-system-statusreporter">io.murano.system.StatusReporter</a></li>
+</ul>
+</li>
+</ul>
+
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/murano_pl/system_classes.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Murano</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Wed Apr 29 17:52:18 2015, commit 9c804c9.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

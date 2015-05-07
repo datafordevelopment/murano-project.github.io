@@ -1,0 +1,813 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Murano Installation Guide &mdash; Murano</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.0.dev20',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Murano" href="../index.html" />
+    <link rel="next" title="Prepare A Lab For Murano" href="prepare.html" />
+    <link rel="prev" title="Welcome to Murano!" href="../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="murano-installation-guide">
+<span id="install"></span><h1>Murano Installation Guide<a class="headerlink" href="#murano-installation-guide" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="content">
+<h2>Content<a class="headerlink" href="#content" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="prepare.html">Prepare A Lab For Murano</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="prepare.html#system-prerequisites">System prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prepare.html#lab-requirements">Lab Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prepare.html#test-your-lab-host-performance">Test Your Lab Host Performance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prepare.html#baseline-data">Baseline Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prepare.html#host-optimizations">Host Optimizations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Installing and Running the Development Version</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manual.html">Installing and Running Manually</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="manual.html#prepare-environment">Prepare Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual.html#install-the-api-service-and-engine">Install the API service and Engine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual.html#install-murano-dashboard">Install Murano Dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual.html#import-murano-applications">Import Murano Applications</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ssl.html">SSL configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ssl.html#https-for-murano-api">HTTPS for Murano API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ssl.html#ssl-for-rabbitmq">SSL for RabbitMQ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ssl.html#ssl-for-murano-dashboard">SSL for Murano Dashboard</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="section" id="prepare-a-lab-for-murano">
+<h1>Prepare A Lab For Murano<a class="headerlink" href="#prepare-a-lab-for-murano" title="Permalink to this headline">¶</a></h1>
+<p>This section provides basic information about lab&#8217;s system requirements.
+It also contains a description of a test which you may use to check if
+your hardware fits the requirements. To do this, run the test and
+compare the results with baseline data provided.</p>
+<div class="section" id="system-prerequisites">
+<h2>System prerequisites<a class="headerlink" href="#system-prerequisites" title="Permalink to this headline">¶</a></h2>
+<p><strong>Supported Operation Systems</strong></p>
+<ul class="simple">
+<li>Ubuntu Server 12.04 LTS</li>
+<li>RHEL/CentOS 6.4</li>
+</ul>
+<p><strong>System packages are required for Murano</strong></p>
+<p><em>Ubuntu</em></p>
+<ul class="simple">
+<li>gcc</li>
+<li>python-pip</li>
+<li>python-dev</li>
+<li>libxml2-dev</li>
+<li>libxslt-dev</li>
+<li>libffi-dev</li>
+<li>libmysqlclient-dev</li>
+<li>libpq-dev</li>
+<li>python-openssl</li>
+<li>mysql-client</li>
+<li>python-mysqldb</li>
+</ul>
+<p><em>CentOS</em></p>
+<ul class="simple">
+<li>gcc</li>
+<li>python-pip</li>
+<li>python-devel</li>
+<li>libxml2-devel</li>
+<li>libxslt-devel</li>
+<li>libffi-devel</li>
+<li>postgresql-devel</li>
+<li>pyOpenSSL</li>
+<li>mysql</li>
+<li>MySQL-python</li>
+</ul>
+</div>
+<div class="section" id="lab-requirements">
+<h2>Lab Requirements<a class="headerlink" href="#lab-requirements" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="48%" />
+<col width="33%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Criteria</th>
+<th class="head">Minimal</th>
+<th class="head">Recommended</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>CPU</td>
+<td>4 core &#64; 2.4 GHz</td>
+<td>24 core &#64; 2.67 GHz</td>
+</tr>
+<tr class="row-odd"><td>RAM</td>
+<td>8 GB</td>
+<td>24 GB or more</td>
+</tr>
+<tr class="row-even"><td>HDD</td>
+<td>2 x 500 GB (7200 rpm)</td>
+<td>4 x 500 GB (7200 rpm</td>
+</tr>
+<tr class="row-odd"><td>RAID</td>
+<td>Software RAID-1 (use mdadm as
+it will improve read
+performance almost two times)</td>
+<td>Hardware RAID-10</td>
+</tr>
+</tbody>
+</table>
+<p>Table: Hardware requirements</p>
+<p>There are a few possible storage configurations except the shown above.
+All of them were tested and were working well.</p>
+<ul>
+<li><p class="first">1x SSD 500+ GB</p>
+</li>
+<li><dl class="first docutils">
+<dt>1x HDD (7200 rpm) 500+ GB and 1x SSD 250+ GB (install the system onto</dt>
+<dd><p class="first last">the HDD and mount the SSD drive to folder where VM images are)</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">1x HDD (15000 rpm) 500+ GB</p>
+</li>
+</ul>
+</div>
+<div class="section" id="test-your-lab-host-performance">
+<h2>Test Your Lab Host Performance<a class="headerlink" href="#test-your-lab-host-performance" title="Permalink to this headline">¶</a></h2>
+<p>We have measured time required to boot 1 to 5 instances of Windows
+system simultaneously. You can use this data as the baseline to check if
+your system is fast enough.</p>
+<p>You should use sysprepped images for this test, to simulate VM first
+boot.</p>
+<p>Steps to reproduce test:</p>
+<ol class="arabic">
+<li><p class="first">Prepare Windows 2012 Standard (with GUI) image in QCOW2 format. Let&#8217;s
+assume that its name is ws-2012-std.qcow2</p>
+</li>
+<li><p class="first">Ensure that there is NO KVM PROCESSES on the host. To do this, run
+command:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;# ps aux | grep kvm
+</pre></div>
+</div>
+</li>
+<li><p class="first">Make 5 copies of Windows image file:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;# for i in $(seq 5); do \
+cp ws-2012-std.qcow2 ws-2012-std-$i.qcow2; done
+</pre></div>
+</div>
+</li>
+<li><p class="first">Create script start-vm.sh in the folder with .qcow2 files:</p>
+<div class="highlight-python"><div class="highlight"><pre>#!/bin/bash
+[ -z $1 ] || echo &quot;VM count not provided!&quot;; exit 1
+for i in $(seq $1); do
+echo &quot;Starting VM $i ...&quot;
+kvm -m 1024 -drive file=ws-2012-std-$i.qcow2,if=virtio -net user -net nic,model=virtio -nographic -usbdevice tablet -vnc :$i &amp; done
+</pre></div>
+</div>
+</li>
+<li><p class="first">Start ONE instance with command below (as root) and measure time
+between VM’s launch and the moment when Server Manager window
+appears. To view VM’s desktop, connect with VNC viewer to your host
+to VNC screen :1 (port 5901):</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;# ./start-vm.sh 1
+</pre></div>
+</div>
+</li>
+<li><p class="first">Turn VM off. You may simply kill all KVM processes by</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;# killall kvm
+</pre></div>
+</div>
+</li>
+</ol>
+<p>7. Start FIVE instances with command below (as root) and measure time
+interval between ALL VM’s launch and the moment when LAST Server Manager
+window appears. To view VM’s desktops, connect with VNC viewer to your
+host to VNC screens :1 thru :5 (ports 5901-5905):</p>
+<blockquote>
+<div><div class="highlight-python"><div class="highlight"><pre>&gt;# ./start-vm.sh 5
+</pre></div>
+</div>
+</div></blockquote>
+<ol class="arabic" start="8">
+<li><p class="first">Turn VMs off. You may simply kill all KVM processes by</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;# killall kvm
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+<div class="section" id="baseline-data">
+<h2>Baseline Data<a class="headerlink" href="#baseline-data" title="Permalink to this headline">¶</a></h2>
+<p>The table below provides baseline data which we&#8217;ve got in our
+environment.</p>
+<p><strong>Avg. Time</strong> refers to the lab with recommended hardware configuration,
+while <strong>Max. Time</strong> refers to minimal hardware configuration.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="36%" />
+<col width="36%" />
+<col width="29%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">&nbsp;</th>
+<th class="head">Boot ONE instance</th>
+<th class="head">Boot FIVE instances</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Avg. Time</td>
+<td>3m:40s</td>
+<td>8m</td>
+</tr>
+<tr class="row-odd"><td>Max. Time</td>
+<td>5m</td>
+<td>20m</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="host-optimizations">
+<h2>Host Optimizations<a class="headerlink" href="#host-optimizations" title="Permalink to this headline">¶</a></h2>
+<p>Default KVM installation could be improved to provide better
+performance.</p>
+<p>The following optimizations may improve host performance up to 30%:</p>
+<ul class="simple">
+<li>change default scheduler from <strong>CFQ</strong> to <strong>Deadline</strong></li>
+<li>use <strong>ksm</strong></li>
+<li>use <strong>vhost-net</strong></li>
+</ul>
+</div>
+</div>
+<div class="section" id="installing-and-running-the-development-version">
+<h1>Installing and Running the Development Version<a class="headerlink" href="#installing-and-running-the-development-version" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference external" href="https://git.openstack.org/cgit/openstack/murano/tree/contrib/devstack">contrib/devstack</a> directory contains the files necessary to integrate
+Murano with <a class="reference external" href="http://www.devstack.org/">Devstack</a>.</p>
+<ol class="arabic">
+<li><p class="first">Follow Devstack documentation to setup a host for Devstack. Then clone
+Devstack source code.</p>
+</li>
+<li><p class="first">Copy Murano integration scripts to Devstack:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ cp lib/murano ${DEVSTACK_DIR}/lib
+$ cp lib/murano-dashboard ${DEVSTACK_DIR}/lib
+$ cp extras.d/70-murano.sh ${DEVSTACK_DIR}/extras.d
+</pre></div>
+</div>
+</li>
+<li><p class="first">Create a <tt class="docutils literal"><span class="pre">localrc</span></tt> file as input to devstack.</p>
+</li>
+<li><p class="first">The Murano services are not enabled by default, so they must be
+enabled in <tt class="docutils literal"><span class="pre">localrc</span></tt> before running <tt class="docutils literal"><span class="pre">stack.sh</span></tt>. This example <tt class="docutils literal"><span class="pre">localrc</span></tt>
+file shows all of the settings required for Murano:</p>
+<div class="highlight-python"><div class="highlight"><pre># Enable Heat
+enable_service heat h-api h-api-cfn h-api-cw h-eng
+
+# Enable Murano
+enable_service murano murano-api murano-engine
+</pre></div>
+</div>
+</li>
+<li><p class="first">Deploy your OpenStack Cloud with Murano:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ ./stack.sh
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+<div class="section" id="installing-and-running-manually">
+<span id="installing-manually"></span><h1>Installing and Running Manually<a class="headerlink" href="#installing-and-running-manually" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="prepare-environment">
+<h2>Prepare Environment<a class="headerlink" href="#prepare-environment" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="install-prerequisites">
+<h3>Install Prerequisites<a class="headerlink" href="#install-prerequisites" title="Permalink to this headline">¶</a></h3>
+<p>First you need to install a number of packages with your OS package manager.
+The list of packages depends on the OS you use.</p>
+<div class="section" id="ubuntu">
+<h4>Ubuntu<a class="headerlink" href="#ubuntu" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> sudo apt-get install python-pip python-dev <span class="se">\</span>
+<span class="go">  libmysqlclient-dev libpq-dev \</span>
+<span class="go">  libxml2-dev libxslt1-dev \</span>
+<span class="go">  libffi-dev</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="fedora">
+<h4>Fedora<a class="headerlink" href="#fedora" title="Permalink to this headline">¶</a></h4>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Fedora support wasn&#8217;t thoroughly tested. We do not guarantee that Murano
+will work on Fedora.</p>
+</div>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> sudo yum install gcc python-setuptools python-devel python-pip
+</pre></div>
+</div>
+</div>
+<div class="section" id="centos">
+<h4>CentOS<a class="headerlink" href="#centos" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> sudo yum install gcc python-setuptools python-devel
+<span class="gp">$</span> sudo easy_install pip
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="install-tox">
+<h3>Install tox<a class="headerlink" href="#install-tox" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> sudo pip install tox
+</pre></div>
+</div>
+</div>
+<div class="section" id="install-and-configure-database">
+<h3>Install And Configure Database<a class="headerlink" href="#install-and-configure-database" title="Permalink to this headline">¶</a></h3>
+<p>Murano can use various database types on backend. For development purposes
+SQLite is enough in most cases. For production installations you should use
+MySQL or PostgreSQL databases.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Although Murano could use PostgreSQL database on backend, it wasn&#8217;t
+thoroughly tested and should be used with caution.</p>
+</div>
+<p>To use MySQL database you should install it and create an empty database first:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> apt-get install python-mysqldb mysql-server
+</pre></div>
+</div>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> mysql -u root -p
+<span class="go">mysql&gt; CREATE DATABASE murano;</span>
+<span class="go">mysql&gt; GRANT ALL PRIVILEGES ON murano.* TO &#39;murano&#39;@&#39;localhost&#39; \</span>
+<span class="go">    IDENTIFIED BY &#39;MURANO_DBPASS&#39;;</span>
+<span class="go">mysql&gt; exit;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="install-the-api-service-and-engine">
+<h2>Install the API service and Engine<a class="headerlink" href="#install-the-api-service-and-engine" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p class="first">Create a folder which will hold all Murano components.</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> mkdir ~/murano
+</pre></div>
+</div>
+</li>
+<li><p class="first">Clone the Murano git repository to the management server.</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> <span class="nb">cd</span> ~/murano
+<span class="gp">$</span> git clone git://git.openstack.org/openstack/murano
+</pre></div>
+</div>
+</li>
+<li><p class="first">Set up Murano config file</p>
+<p>Murano has common config file for API and Engine servicies.</p>
+<p>First, generate sample configuration file, using tox</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> tox -e genconfig
+</pre></div>
+</div>
+<p>And make a copy of it for further modifications</p>
+</li>
+<li><p class="first">Edit <tt class="docutils literal"><span class="pre">murano.conf</span></tt> with your favorite editor. Below is an example
+which contains basic settings your are likely need to configure.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The example below uses SQLite database. Edit <strong>[database]</strong> section
+if you want to use other database type.</p>
+</div>
+<div class="highlight-ini"><div class="highlight"><pre>[DEFAULT]
+debug = true
+verbose = true
+rabbit_host = %RABBITMQ_SERVER_IP%
+rabbit_userid = %RABBITMQ_USER%
+rabbit_password = %RABBITMQ_PASSWORD%
+rabbit_virtual_host = %RABBITMQ_SERVER_VIRTUAL_HOST%
+notification_driver = messagingv2
+
+...
+
+[database]
+backend = sqlalchemy
+connection = sqlite:///murano.sqlite
+
+...
+
+[keystone]
+auth_url = &#39;http://%OPENSTACK_HOST_IP%:5000/v2.0&#39;
+
+...
+
+[keystone_authtoken]
+auth_uri = &#39;http://%OPENSTACK_HOST_IP%:5000/v2.0&#39;
+auth_host = &#39;%OPENSTACK_HOST_IP%&#39;
+auth_port = 5000
+auth_protocol = http
+admin_tenant_name = %OPENSTACK_ADMIN_TENANT%
+admin_user = %OPENSTACK_ADMIN_USER%
+admin_password = %OPENSTACK_ADMIN_PASSWORD%
+
+...
+
+[murano]
+url = http://%YOUR_HOST_IP%:8082
+
+[rabbitmq]
+host = %RABBITMQ_SERVER_IP%
+login = %RABBITMQ_USER%
+password = %RABBITMQ_PASSWORD%
+virtual_host = %RABBITMQ_SERVER_VIRTUAL_HOST%
+</pre></div>
+</div>
+</li>
+<li><p class="first">Create a virtual environment and install Murano prerequisites. We will use
+<em>tox</em> for that. Virtual environment will be created under <em>.tox</em> directory.</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> <span class="nb">cd</span> ~/murano/murano
+<span class="gp">$</span> tox
+</pre></div>
+</div>
+</li>
+<li><p class="first">Create database tables for Murano.</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> <span class="nb">cd</span> ~/murano/murano
+<span class="gp">$</span> tox -e venv -- murano-db-manage <span class="se">\</span>
+<span class="go">  --config-file ./etc/murano/murano.conf upgrade</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Open a new console and launch Murano API. A separate terminal is
+required because the console will be locked by a running process.</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> <span class="nb">cd</span> ~/murano/murano
+<span class="gp">$</span> tox -e venv -- murano-api --config-file ./etc/murano/murano.conf
+</pre></div>
+</div>
+</li>
+<li><p class="first">Import Core Murano Library.</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> <span class="nb">cd</span> ~/murano/murano
+<span class="gp">$</span> <span class="nb">pushd</span> ./meta/io.murano<span class="p">;</span> zip -r ../../io.murono.zip *<span class="p">;</span> <span class="nb">popd</span><span class="p">;</span>
+<span class="gp">$</span> tox -e venv -- murano --murano-url http://localhost:8082 <span class="se">\</span>
+<span class="go">  package-import io.murono.zip</span>
+</pre></div>
+</div>
+</li>
+<li><dl class="first docutils">
+<dt>Open a new console and launch Murano Engine. A separate terminal is</dt>
+<dd><p class="first">required because the console will be locked by a running process.</p>
+<div class="last highlight-console"><div class="highlight"><pre><span class="gp">$</span> <span class="nb">cd</span> ~/murano/murano
+<span class="gp">$</span> tox -e venv -- murano-engine --config-file ./etc/murano/murano.conf
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ol>
+</div>
+<div class="section" id="install-murano-dashboard">
+<h2>Install Murano Dashboard<a class="headerlink" href="#install-murano-dashboard" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>Murano API &amp; Engine services provide the core of Murano. However, your need a
+control plane to use it. This section decribes how to install and run Murano
+Dashboard.</div></blockquote>
+<ol class="arabic">
+<li><p class="first">Clone the repository with Murano Dashboard.</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> <span class="nb">cd</span> ~/murano
+<span class="gp">$</span> git clone git://git.openstack.org/openstack/murano-dashboard
+</pre></div>
+</div>
+</li>
+<li><p class="first">Clone horizon repository</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> git clone git://git.openstack.org/openstack/horizon
+</pre></div>
+</div>
+</li>
+<li><p class="first">Create venv and install muranodashboard as editable module.</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> <span class="nb">cd </span>horizon
+<span class="gp">$</span> tox -e venv -- pip install -e ../murano-dashboard
+</pre></div>
+</div>
+</li>
+<li><p class="first">Copy muranodashboard plugin file.</p>
+<p>This step enables murano panel in horizon dashboard.</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> cp ../murano-dashboard/muranodashboard/local/_50_murano.py openstack_dashboard/local/enabled/
+</pre></div>
+</div>
+</li>
+<li><p class="first">Prepare local settings.</p>
+<p>To get more information, check out official
+<a class="reference external" href="http://docs.openstack.org/developer/horizon/topics/settings.html#openstack-settings-partial">horizon documentation</a>.</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> cp openstack_dashboard/local/local_settings.py.example openstack_dashboard/local/local_settings.py
+</pre></div>
+</div>
+</li>
+<li><p class="first">Customize local settings according to Openstack installation.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="o">...</span>
+<span class="n">ALLOWED_HOSTS</span> <span class="o">=</span> <span class="s">&#39;*&#39;</span>
+
+<span class="c"># Provide OpenStack Lab credentials</span>
+<span class="n">OPENSTACK_HOST</span> <span class="o">=</span> <span class="s">&#39;%OPENSTACK_HOST_IP%&#39;</span>
+
+<span class="o">...</span>
+
+<span class="c"># Set secret key to prevent it&#39;s generation</span>
+<span class="n">SECRET_KEY</span> <span class="o">=</span> <span class="s">&#39;random_string&#39;</span>
+
+<span class="o">...</span>
+
+<span class="n">DEBUG_PROPAGATE_EXCEPTIONS</span> <span class="o">=</span> <span class="n">DEBUG</span>
+</pre></div>
+</div>
+<p>Also, it&#8217;s better to change default session backend from  browser cookies to database to avoid
+issues with forms during creating applications:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="o">...</span>
+<span class="n">DATABASES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;default&#39;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s">&#39;ENGINE&#39;</span><span class="p">:</span> <span class="s">&#39;django.db.backends.sqlite3&#39;</span><span class="p">,</span>
+    <span class="s">&#39;NAME&#39;</span><span class="p">:</span> <span class="s">&#39;/tmp/murano-dashboard.sqlite&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">SESSION_ENGINE</span> <span class="o">=</span> <span class="s">&#39;django.contrib.sessions.backends.db&#39;</span>
+</pre></div>
+</div>
+<p>If you do not plan to get murano service from keystone application catalog,
+provide where murano-api service is running:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="o">...</span>
+<span class="n">MURANO_API_URL</span> <span class="o">=</span> <span class="s">&#39;http://localhost:8082&#39;</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Perform database synchronization.</p>
+<p>Optional step. Needed in case you set up database as a session backend.</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> tox -e venv -- python manage.py syncdb
+</pre></div>
+</div>
+<p>You can reply &#8216;no&#8217; since for development purpose separate user is not needed.</p>
+</li>
+<li><p class="first">Run Django server at 127.0.0.1:8000 or provide different IP and PORT parameters.</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> tox -e venv -- python manage.py runserver &lt;IP:PORT&gt;
+</pre></div>
+</div>
+<p>Development server will be restarted automatically on every code change.</p>
+</li>
+<li><p class="first">Open dashboard using url <a class="reference external" href="http://localhost:8000">http://localhost:8000</a></p>
+</li>
+</ol>
+</div>
+<div class="section" id="import-murano-applications">
+<h2>Import Murano Applications<a class="headerlink" href="#import-murano-applications" title="Permalink to this headline">¶</a></h2>
+<p>Applications are needed to be imported
+to fill the catalog. It can be done via dashboard, but also possible via CLI:</p>
+<ol class="arabic">
+<li><p class="first">Clone Murano Apps repository.</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> <span class="nb">cd</span> ~/murano
+<span class="gp">$</span> git clone git://git.openstack.org/openstack/murano-apps
+</pre></div>
+</div>
+</li>
+<li><p class="first">Import every package you need from this repository, using the command
+below.</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> <span class="nb">cd</span> ~/murano/murano
+<span class="gp">$</span> <span class="nb">pushd</span> ../murano-apps/Docker/Applications/%APP-NAME%/package<span class="p">;</span> <span class="se">\</span>
+<span class="go">  zip -r ~/murano/murano/app.zip *; popd;</span>
+<span class="gp">$</span> tox -e venv -- murano --murano-url http://localhost:8082 package-import app.zip
+</pre></div>
+</div>
+</li>
+</ol>
+<div class="section" id="network-configuration">
+<h3>Network Configuration<a class="headerlink" href="#network-configuration" title="Permalink to this headline">¶</a></h3>
+<p>Murano may work in various networking environments and is capable to detect the
+current network configuration and choose the appropriate settings automatically.
+However, some additional actions are required to support advanced scenarios.</p>
+<div class="section" id="nova-network-support">
+<h4>Nova network support<a class="headerlink" href="#nova-network-support" title="Permalink to this headline">¶</a></h4>
+<p>Nova Network is simplest networking solution, which has limited capabilities
+but is available on any OpenStack deployment without the need to deploy any
+additional components.</p>
+<p>When a new Murano Environment is created, Murano checks if a dedicated
+networking service (i.e. Neutron) exists in the current OpenStack deployment.
+It relies on Keystone&#8217;s service catalog for that.
+If such a service is not present, Murano automatically falls back to Nova
+Network. No further configuration is needed in this case, all the VMs spawned
+by Murano will be joining the same Network.</p>
+</div>
+<div class="section" id="neutron-support">
+<h4>Neutron support<a class="headerlink" href="#neutron-support" title="Permalink to this headline">¶</a></h4>
+<p>If Neutron is installed, Murano enables its advanced networking features that
+give you ability to not care about configuring networks for your application.</p>
+<p>By default it will create an isolated network for each environment and join
+all VMs needed by your application to that network. To install and configure application in
+just spawned virtual machine Murano also requires a router connected to the external network.</p>
+</div>
+<div class="section" id="automatic-neutron-network-configuration">
+<h4>Automatic Neutron network configuration<a class="headerlink" href="#automatic-neutron-network-configuration" title="Permalink to this headline">¶</a></h4>
+<p>To create router automatically, provide the following parameters in config file:</p>
+<div class="highlight-ini"><div class="highlight"><pre><span class="k">[networking]</span>
+
+<span class="na">external_network</span> <span class="o">=</span> <span class="s">%EXTERNAL_NETWORK_NAME%</span>
+<span class="na">router_name</span> <span class="o">=</span> <span class="s">%MURANO_ROUTER_NAME%</span>
+<span class="na">create_router</span> <span class="o">=</span> <span class="s">true</span>
+</pre></div>
+</div>
+<p>To figure out the name of the external network, perform the following command:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> neutron net-external-list
+</pre></div>
+</div>
+<p>During the first deploy, required networks and router with specified name will be created and set up.</p>
+</div>
+<div class="section" id="manual-neutron-network-configuration">
+<h4>Manual neutron network configuration<a class="headerlink" href="#manual-neutron-network-configuration" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Step 1. Create public network</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li>First, you need to check for existence of external networks. Login as admin and go to
+<em>Project -&gt; Network -&gt; Network Topology</em>. And check network type in network details at <em>Admin -&gt; Networks -&gt; Network name</em> page.
+The same action can be done via CLI by running <cite>neutron net-external-list</cite>. To create new external network examine <a class="reference external" href="http://docs.openstack.org/trunk/install-guide/install/apt/content/neutron_initial-external-network.html">OpenStack documentation</a>.</li>
+</ul>
+<blockquote>
+<div><a class="reference internal image-reference" href="../_images/1.png"><img alt="../_images/1.png" class="align-left" src="../_images/1.png" /></a>
+</div></blockquote>
+</div></blockquote>
+<ul class="simple">
+<li>Step 2. Create local network</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li>Go to <em>Project -&gt; Network -&gt; Networks</em>.</li>
+<li>Click <em>Create Network</em> and fill the form.</li>
+</ul>
+<blockquote>
+<div><img alt="../_images/2.png" src="../_images/2.png" />
+<img alt="../_images/3.png" src="../_images/3.png" />
+</div></blockquote>
+</div></blockquote>
+<ul class="simple">
+<li>Step 3. Create router</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li>Go to <em>Project -&gt; Network -&gt; Routers</em></li>
+<li>Click &#8220;Create Router&#8221;</li>
+<li>In the &#8220;Router Name&#8221; field, enter the <em>murano-default-router</em></li>
+</ul>
+<blockquote>
+<div><img alt="../_images/4_1.png" src="../_images/4_1.png" />
+<p>If you specify a name other than <em>murano-default-router</em>, it will be necessary to change the following settings in the config file:</p>
+<div class="highlight-ini"><div class="highlight"><pre><span class="k">[networking]</span>
+
+<span class="na">router_name</span> <span class="o">=</span> <span class="s">%SPECIFIED_NAME%</span>
+<span class="na">create_router</span> <span class="o">=</span> <span class="s">false</span>
+</pre></div>
+</div>
+</div></blockquote>
+<ul class="simple">
+<li>Click on the specified router name</li>
+<li>In the opened view click “Add interface”</li>
+<li>Specify the subnet and IP address</li>
+</ul>
+<blockquote>
+<div><img alt="../_images/4_2.png" src="../_images/4_2.png" />
+<p>And check the result in <cite>Network Topology</cite> tab.</p>
+<img alt="../_images/5.png" src="../_images/5.png" />
+</div></blockquote>
+</div></blockquote>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Murano Installation Guide</a><ul>
+<li><a class="reference internal" href="#content">Content</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#prepare-a-lab-for-murano">Prepare A Lab For Murano</a><ul>
+<li><a class="reference internal" href="#system-prerequisites">System prerequisites</a></li>
+<li><a class="reference internal" href="#lab-requirements">Lab Requirements</a></li>
+<li><a class="reference internal" href="#test-your-lab-host-performance">Test Your Lab Host Performance</a></li>
+<li><a class="reference internal" href="#baseline-data">Baseline Data</a></li>
+<li><a class="reference internal" href="#host-optimizations">Host Optimizations</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#installing-and-running-the-development-version">Installing and Running the Development Version</a></li>
+<li><a class="reference internal" href="#installing-and-running-manually">Installing and Running Manually</a><ul>
+<li><a class="reference internal" href="#prepare-environment">Prepare Environment</a><ul>
+<li><a class="reference internal" href="#install-prerequisites">Install Prerequisites</a><ul>
+<li><a class="reference internal" href="#ubuntu">Ubuntu</a></li>
+<li><a class="reference internal" href="#fedora">Fedora</a></li>
+<li><a class="reference internal" href="#centos">CentOS</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#install-tox">Install tox</a></li>
+<li><a class="reference internal" href="#install-and-configure-database">Install And Configure Database</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#install-the-api-service-and-engine">Install the API service and Engine</a></li>
+<li><a class="reference internal" href="#install-murano-dashboard">Install Murano Dashboard</a></li>
+<li><a class="reference internal" href="#import-murano-applications">Import Murano Applications</a><ul>
+<li><a class="reference internal" href="#network-configuration">Network Configuration</a><ul>
+<li><a class="reference internal" href="#nova-network-support">Nova network support</a></li>
+<li><a class="reference internal" href="#neutron-support">Neutron support</a></li>
+<li><a class="reference internal" href="#automatic-neutron-network-configuration">Automatic Neutron network configuration</a></li>
+<li><a class="reference internal" href="#manual-neutron-network-configuration">Manual neutron network configuration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="../index.html"
+                                  title="previous chapter">Welcome to Murano!</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="prepare.html"
+                                  title="next chapter">Prepare A Lab For Murano</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/install/index.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="prepare.html" title="Prepare A Lab For Murano"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="Welcome to Murano!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Murano</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Wed Apr 29 17:52:18 2015, commit 9c804c9.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

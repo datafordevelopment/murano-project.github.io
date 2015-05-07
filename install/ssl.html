@@ -1,0 +1,225 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>SSL configuration &mdash; Murano</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.0.dev20',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Murano" href="../index.html" />
+    <link rel="up" title="Murano Installation Guide" href="index.html" />
+    <link rel="next" title="MuranoPL: Murano Programming Language" href="../murano_pl/murano_pl_index.html" />
+    <link rel="prev" title="Installing and Running Manually" href="manual.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ssl-configuration">
+<h1>SSL configuration<a class="headerlink" href="#ssl-configuration" title="Permalink to this headline">¶</a></h1>
+<p>Murano components are able to work with SSL. This chapter will help your
+to make proper settings with SSL configuration.</p>
+<div class="section" id="https-for-murano-api">
+<h2>HTTPS for Murano API<a class="headerlink" href="#https-for-murano-api" title="Permalink to this headline">¶</a></h2>
+<p>SSL for Murano API service can be configured in <em>ssl</em> section in
+<tt class="docutils literal"><span class="pre">/etc/murano/murano.conf</span></tt>. Just point to a valid SSL certificate.
+See the example below:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">ssl</span><span class="p">]</span>
+<span class="n">cert_file</span> <span class="o">=</span> <span class="n">PATH</span>
+<span class="n">key_file</span> <span class="o">=</span> <span class="n">PATH</span>
+<span class="n">ca_file</span> <span class="o">=</span> <span class="n">PATH</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><em>cert_file</em>    Path to the certificate file the server should use when binding to an SSL-wrapped socket.</li>
+<li><em>key_file</em>     Path to the private key file the server should use when binding to an SSL-wrapped socket.</li>
+<li><em>ca_file</em>      Path to the CA certificate file the server should use to validate client certificates provided during an SSL handshake. This is ignored if cert_file and &#8220;key_file&#8221; are not set.</li>
+</ul>
+<p>The use of SSL is automatically started after point to HTTPS protocol
+instead of HTTP during registration Murano API service in endpoints
+(Change publicurl argument to start with https://).
+SSL for Murano API is implemented like in any other Openstack component.
+This realization is based on ssl python module so more information about
+it can be found <a class="reference external" href="https://docs.python.org/2/library/ssl.html">here</a>.</p>
+</div>
+<div class="section" id="ssl-for-rabbitmq">
+<h2>SSL for RabbitMQ<a class="headerlink" href="#ssl-for-rabbitmq" title="Permalink to this headline">¶</a></h2>
+<p>All Murano components communicate with each other by RabbitMQ. This
+interaction can be encrypted with SSL. By default all messages in Rabbit
+MQ are not encrypted. Each RabbitMQ Exchange should be configured
+separately.</p>
+<p><strong>Murano API &lt;-&gt; Rabbit MQ exchange &lt;-&gt; Murano Engine</strong></p>
+<p>Edit ssl parameters in default section of <tt class="docutils literal"><span class="pre">/etc/murano/murano.conf</span></tt>. Set <tt class="docutils literal"><span class="pre">rabbit_use_ssl</span></tt> option to <em>true</em> and configure ssl kombu parameters.
+Specify the path to the SSL keyfile and SSL CA certificate in a regular format: /path/to/file without quotes or leave it empty to
+allow self-signed certificates.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># connect over SSL for RabbitMQ (boolean value)</span>
+<span class="c">#rabbit_use_ssl=false</span>
+
+<span class="c"># SSL version to use (valid only if SSL enabled). valid values</span>
+<span class="c"># are TLSv1, SSLv23 and SSLv3. SSLv2 may be available on some</span>
+<span class="c"># distributions (string value)</span>
+<span class="c">#kombu_ssl_version=</span>
+
+<span class="c"># SSL key file (valid only if SSL enabled) (string value)</span>
+<span class="c">#kombu_ssl_keyfile=</span>
+
+<span class="c"># SSL cert file (valid only if SSL enabled) (string value)</span>
+<span class="c">#kombu_ssl_certfile=</span>
+
+<span class="c"># SSL certification authority file (valid only if SSL enabled)</span>
+<span class="c"># (string value)</span>
+<span class="c">#kombu_ssl_ca_certs=</span>
+</pre></div>
+</div>
+<p><strong>Murano Agent -&gt; Rabbit MQ exchange</strong></p>
+<p>In main murano configuration file there is a section ,named <em>rabbitmq</em>, that is responsible for set up communication between Murano Agent and Rabbit MQ.
+Just set <em>ssl</em> parameter to True to enable ssl.</p>
+<div class="highlight-python"><div class="highlight"><pre>[rabbitmq]
+host = localhost
+port = 5672
+login = guest
+password = guest
+virtual_host = /
+ssl = True
+</pre></div>
+</div>
+<p>If you want to configure Murano Agent in a different way change
+the default template. It can be found in Murano Core Library, located at <em>http://git.openstack.org/cgit/openstack/murano/tree/meta/io.murano/Resources/Agent-v1.template</em>. Take
+a look at appSettings section:</p>
+<div class="highlight-python"><div class="highlight"><pre>&lt;appSettings&gt;
+        &lt;add key=&quot;rabbitmq.host&quot; value=&quot;%RABBITMQ_HOST%&quot;/&gt;
+        &lt;add key=&quot;rabbitmq.port&quot; value=&quot;%RABBITMQ_PORT%&quot;/&gt;
+        &lt;add key=&quot;rabbitmq.user&quot; value=&quot;%RABBITMQ_USER%&quot;/&gt;
+        &lt;add key=&quot;rabbitmq.password&quot; value=&quot;%RABBITMQ_PASSWORD%&quot;/&gt;
+        &lt;add key=&quot;rabbitmq.vhost&quot; value=&quot;%RABBITMQ_VHOST%&quot;/&gt;
+        &lt;add key=&quot;rabbitmq.inputQueue&quot; value=&quot;%RABBITMQ_INPUT_QUEUE%&quot;/&gt;
+        &lt;add key=&quot;rabbitmq.resultExchange&quot; value=&quot;&quot;/&gt;
+        &lt;add key=&quot;rabbitmq.resultRoutingKey&quot; value=&quot;%RESULT_QUEUE%&quot;/&gt;
+        &lt;add key=&quot;rabbitmq.durableMessages&quot; value=&quot;true&quot;/&gt;
+
+        &lt;add key=&quot;rabbitmq.ssl&quot; value=&quot;%RABBITMQ_SSL%&quot;/&gt;
+        &lt;add key=&quot;rabbitmq.allowInvalidCA&quot; value=&quot;true&quot;/&gt;
+        &lt;add key=&quot;rabbitmq.sslServerName&quot; value=&quot;&quot;/&gt;
+
+    &lt;/appSettings&gt;
+</pre></div>
+</div>
+<p>Desired parameter should be set directly to the value of the key that
+you want to change. Quotes are need to be kept. Thus you can change
+&#8220;rabbitmq.ssl&#8221; and &#8220;rabbitmq.port&#8221; values to make Rabbit MQ work with
+this exchange in a different from Murano-Engine way.
+After modification, don&#8217;t forget to zip and re-upload core library.</p>
+</div>
+<div class="section" id="ssl-for-murano-dashboard">
+<h2>SSL for Murano Dashboard<a class="headerlink" href="#ssl-for-murano-dashboard" title="Permalink to this headline">¶</a></h2>
+<p>If you are going not to use self-signed certificates additional
+configuration do not need to be done. Just point https in the URL.
+Otherwise, set <em>MURANO_API_INSECURE = True</em> on horizon config. You can
+find it in <tt class="docutils literal"><span class="pre">/etc/openstack-dashboard/local_settings.py.</span></tt>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">SSL configuration</a><ul>
+<li><a class="reference internal" href="#https-for-murano-api">HTTPS for Murano API</a></li>
+<li><a class="reference internal" href="#ssl-for-rabbitmq">SSL for RabbitMQ</a></li>
+<li><a class="reference internal" href="#ssl-for-murano-dashboard">SSL for Murano Dashboard</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="manual.html"
+                                  title="previous chapter">Installing and Running Manually</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="../murano_pl/murano_pl_index.html"
+                                  title="next chapter">MuranoPL: Murano Programming Language</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/install/ssl.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../murano_pl/murano_pl_index.html" title="MuranoPL: Murano Programming Language"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="manual.html" title="Installing and Running Manually"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Murano</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Murano Installation Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Wed Apr 29 17:52:18 2015, commit 9c804c9.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

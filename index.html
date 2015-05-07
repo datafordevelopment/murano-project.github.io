@@ -1,1 +1,223 @@
-Hello World
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Welcome to Murano! &mdash; Murano</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2015.2.0.dev20',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Murano" href="#" />
+    <link rel="next" title="Murano Installation Guide" href="install/index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="welcome-to-murano">
+<h1>Welcome to Murano!<a class="headerlink" href="#welcome-to-murano" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Murano Project introduces an application catalog, which allows application
+developers and cloud administrators to publish various cloud-ready applications
+in a browsable categorised catalog. It may be used by the cloud users
+(including the unexperienced ones) to pick-up the needed applications and
+services and composes the reliable environments out of them in a
+&#8220;push-the-button&#8221; manner.</p>
+<p>Key goal is to provide UI and API which allows to compose and deploy composite
+environments on the Application abstraction level and then manage their
+lifecycle.</p>
+<dl class="docutils">
+<dt>Murano consists of several source code repositories:</dt>
+<dd><ul class="first last simple">
+<li><a class="reference external" href="https://git.openstack.org/cgit/openstack/murano/">murano</a> - is the main repository. It contains code for Murano API
+server, Murano engine and MuranoPL</li>
+<li><a class="reference external" href="https://git.openstack.org/cgit/openstack/murano-agent/">murano-agent</a> - agent which runs on guest VMs and executes deployment
+plan</li>
+<li><a class="reference external" href="https://git.openstack.org/cgit/openstack/murano-dashboard/">murano-dashboard</a> - Murano UI implemented as a plugin for OpenStack
+Dashboard</li>
+<li><a class="reference external" href="https://git.openstack.org/cgit/openstack/python-muranoclient/">python-muranoclient</a> - Client library and CLI client for Murano</li>
+</ul>
+</dd>
+</dl>
+<p>This documentation offers information on how Murano works and how to
+contribute to the project.</p>
+<p><strong>Installation</strong></p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install/index.html">Murano Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install/index.html#prepare-a-lab-for-murano">Prepare A Lab For Murano</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install/index.html#installing-and-running-the-development-version">Installing and Running the Development Version</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install/index.html#installing-and-running-manually">Installing and Running Manually</a></li>
+</ul>
+</div>
+<p><strong>Background Concepts for Murano</strong></p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="murano_pl/murano_pl_index.html">MuranoPL: Murano Programming Language</a></li>
+<li class="toctree-l1"><a class="reference internal" href="articles/dynamic_ui.html">Dynamic UI Definition specification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="articles/workflow.html">Murano workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="articles/policy_enf_index.html">Murano Policy Enforcement</a></li>
+</ul>
+</div>
+<p><strong>Tutorials</strong></p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="articles/app_pkg.html">Composing application package manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="articles/heat_support.html">Uploading HOT templates to the Application Catalog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="image_builders/index.html">Building Murano Image</a></li>
+<li class="toctree-l1"><a class="reference internal" href="articles/test_docs.html">Murano Automated Tests Description</a></li>
+</ul>
+</div>
+<p><strong>Client</strong></p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="articles/client.html">Murano client</a></li>
+</ul>
+</div>
+<p><strong>Repository</strong></p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="articles/repository.html">Murano package repository</a></li>
+</ul>
+</div>
+<p><strong>Guidelines</strong></p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to Murano</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#contributor-license-agreement">Contributor License Agreement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#project-hosting-details">Project Hosting Details</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guidelines.html">Development Guidelines</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guidelines.html#coding-guidelines">Coding Guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guidelines.html#testing-guidelines">Testing Guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guidelines.html#documentation-guidelines">Documentation Guidelines</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="articles/debug_tips.html">Murano TroubleShooting and Debug Tips</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="articles/debug_tips.html#problems-during-configuration">Problems during configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="articles/debug_tips.html#problems-during-deployment">Problems during deployment</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="articles/app_migrating.html">Migrating applications from Murano v0.5 to Stable/Juno</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="articles/app_migrating.html#rename-workflow-to-methods">Rename <em>&#8216;Workflow&#8217;</em> to <em>&#8216;Methods&#8217;</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="articles/app_migrating.html#change-the-instance-type-in-the-ui-definition-application-section">Change the Instance type in the UI definition &#8216;Application&#8217; section</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p><strong>API specification</strong></p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="specification/index.html">Murano API v1 specification</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="#">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Welcome to Murano!</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Next topic</h4>
+            <p class="topless"><a href="install/index.html"
+                                  title="next chapter">Murano Installation Guide</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/index.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="install/index.html" title="Murano Installation Guide"
+             accesskey="N">next</a> |</li>
+        <li><a href="#">Murano</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Wed Apr 29 17:52:18 2015, commit 9c804c9.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

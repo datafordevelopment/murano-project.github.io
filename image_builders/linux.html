@@ -1,0 +1,156 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Linux Image &mdash; Murano</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.0.dev20',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Murano" href="../index.html" />
+    <link rel="up" title="Building Murano Image" href="index.html" />
+    <link rel="next" title="Upload Image Into Glance" href="upload.html" />
+    <link rel="prev" title="Windows Image" href="windows.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="linux-image">
+<h1>Linux Image<a class="headerlink" href="#linux-image" title="Permalink to this headline">¶</a></h1>
+<p>At the moment the best way to build a Linux image with Murano agent is
+to use disk image builder.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Disk image builder requires sudo rights</p>
+</div>
+<p>The process is quite simple. Let&#8217;s assume that you use a directory ~/git
+for cloning git repositories:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> <span class="nb">export </span><span class="nv">GITDIR</span><span class="o">=</span>~/git
+<span class="gp">$</span> mkdir -p <span class="nv">$GITDIR</span>
+</pre></div>
+</div>
+<p>Clone the components required to build an image to that directory:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> <span class="nb">cd</span> <span class="nv">$GITDIR</span>
+<span class="gp">$</span> git clone git://git.openstack.org/cgit/openstack/murano
+<span class="gp">$</span> git clone git://git.openstack.org/cgit/openstack/murano-agent
+<span class="gp">$</span> git clone git://git.openstack.org/cgit/openstack/diskimage-builder
+</pre></div>
+</div>
+<p>Checkout a change request that allows to build an image using disk image builder
+completely installed to virtual environment:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> <span class="nb">cd</span> <span class="nv">$GITDIR</span>/diskimage-builder
+<span class="gp">$</span> git fetch https://review.openstack.org/openstack/diskimage-builder refs/changes/02/168002/2 <span class="o">&amp;&amp;</span> git checkout FETCH_HEAD
+</pre></div>
+</div>
+<p>Install additional packages required by disk image builder:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> sudo apt-get install qemu-utils curl python-tox
+</pre></div>
+</div>
+<p>Export paths where additional dib elements are located:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> <span class="nb">export </span><span class="nv">ELEMENTS_PATH</span><span class="o">=</span><span class="nv">$GITDIR</span>/murano/contrib/elements:<span class="nv">$GITDIR</span>/murano-agent/contrib/elements
+</pre></div>
+</div>
+<p>And build Ubuntu-based image with Murano agent:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> <span class="nb">cd</span> <span class="nv">$GITDIR</span>/diskimage-builder
+<span class="gp">$</span> tox -e venv -- disk-image-create vm ubuntu murano-agent -o ../murano-agent.qcow2
+</pre></div>
+</div>
+<p>If you need Fedora based image replace &#8216;ubuntu&#8217; to &#8216;fedora&#8217; in the last command.</p>
+<p>It&#8217;ll take a while (up to 30 minutes if your hard drive and internet connection are slow).</p>
+<p>When done upload murano-agent.qcow2 image to Glance and play :)</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="windows.html"
+                                  title="previous chapter">Windows Image</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="upload.html"
+                                  title="next chapter">Upload Image Into Glance</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/image_builders/linux.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="upload.html" title="Upload Image Into Glance"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="windows.html" title="Windows Image"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Murano</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Building Murano Image</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Wed Apr 29 17:52:18 2015, commit 9c804c9.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

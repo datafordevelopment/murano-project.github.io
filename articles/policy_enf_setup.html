@@ -1,0 +1,241 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Murano Policy Enforcement Setup Guide &mdash; Murano</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.0.dev20',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Murano" href="../index.html" />
+    <link rel="up" title="Murano Policy Enforcement" href="policy_enf_index.html" />
+    <link rel="next" title="Murano Policy Enforcement - Developer Guide" href="policy_enf_dev.html" />
+    <link rel="prev" title="Murano Policy Enforcement Example" href="policy_enf.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="murano-policy-enforcement-setup-guide">
+<h1>Murano Policy Enforcement Setup Guide<a class="headerlink" href="#murano-policy-enforcement-setup-guide" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<span id="policyenf-setup"></span><h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Before policy enforcement feature will be used, it has to be configured. It has
+to be enabled in Murano configuration, and Congress has to have created policy
+and rules used during policy evaluation.</p>
+<p>This document does not cover Murano and Congress configuration options useful
+for Murano application deployment (e.g., DNS setup, floating IPs, ...).</p>
+</div>
+<div class="section" id="setup">
+<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h2>
+<p>This setup uses <em>openstack</em> command. You can use copy-paste for commands.</p>
+<p>If you are using DevStack installation, you can setup environment using
+following command.</p>
+<blockquote>
+<div><div class="highlight-ini"><div class="highlight"><pre>source devstack/openrc admin admin
+</pre></div>
+</div>
+</div></blockquote>
+<ol class="arabic">
+<li><p class="first"><strong>Murano</strong></p>
+<p>Enable policy enforcement in Murano:</p>
+<blockquote>
+<div><ul class="simple">
+<li>edit <em>/etc/murano/murano.conf</em> to enable <strong>enable_model_policy_enforcer</strong>
+option:</li>
+</ul>
+<div class="highlight-ini"><div class="highlight"><pre><span class="k">[engine]</span>
+<span class="c1"># Enable model policy enforcer using Congress (boolean value)</span>
+<span class="na">enable_model_policy_enforcer</span> <span class="o">=</span> <span class="s">true</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>restart murano-engine</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Congress</strong></p>
+<p>Policy enforcement uses following policies:</p>
+<ul>
+<li><p class="first"><strong>murano</strong> policy</p>
+<blockquote>
+<div><p>Policy is created by Congress&#8217; Murano datasource driver, which is part of
+Congress. It has to be configured for the OpenStack tenant where Murano
+application will be deployed. Datasource driver retrieves deployed Murano
+environments and populates Congress&#8217; murano policy tables
+(<em class="xref std std-ref">policyenf_dev</em>).</p>
+<p>Following commands removes existing <strong>murano</strong> policy, and creates new
+<strong>murano</strong> policy configured for tenant <em>demo</em>.</p>
+</div></blockquote>
+</li>
+</ul>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">. ~/devstack/openrc admin admin # if you are using devstack, otherwise you have to setup env manually</span>
+
+<span class="gp">#</span> remove default murano datasource configuration, because it is using <span class="s1">&#39;admin&#39;</span> tenant. We need <span class="s1">&#39;demo&#39;</span> tenant to be used.
+<span class="go">openstack congress datasource delete murano</span>
+<span class="go">openstack congress datasource create murano murano --config username=&quot;$OS_USERNAME&quot; --config tenant_name=&quot;demo&quot;  --config password=&quot;$OS_PASSWORD&quot; --config auth_url=&quot;$OS_AUTH_URL&quot;</span>
+</pre></div>
+</div>
+<ul>
+<li><dl class="first docutils">
+<dt><strong>murano_system</strong> policy</dt>
+<dd><p class="first">Policy holds user defined rules for policy enforcement. Rules typically
+uses tables from other policies (e.g., murano, nova, keystone, ...).
+Policy enforcement expects <em>predeploy_errors</em> table here which is created
+by creating <strong>predeploy_errors</strong> rules.</p>
+<p class="last">Following command creates <strong>murano_system</strong> rule</p>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">openstack congress policy create murano_system</span>
+</pre></div>
+</div>
+<ul>
+<li><dl class="first docutils">
+<dt><strong>murano_action</strong> policy with internal management rules</dt>
+<dd><p class="first last">Following rules are used internally in policy enforcement request.
+These rules are stored in dedicated <strong>murano_action</strong> policy which is
+created here.
+They are important for case when an environment is deployed again.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">#</span> create murano_action policy
+<span class="go">openstack congress policy create murano_action --kind action</span>
+
+<span class="gp">#</span> register action deleteEnv
+<span class="go">openstack congress policy rule create murano_action &#39;action(&quot;deleteEnv&quot;)&#39;</span>
+
+<span class="gp">#</span> states
+<span class="go">openstack congress policy rule create murano_action &#39;murano:states-(eid, st) :- deleteEnv(eid), murano:states( eid, st)&#39;</span>
+
+<span class="gp">#</span> parent_types
+<span class="go">openstack congress policy rule create murano_action &#39;murano:parent_types-(tid, type) :- deleteEnv(eid), murano:connected(eid, tid),murano:parent_types(tid,type)&#39;</span>
+<span class="go">openstack congress policy rule create murano_action &#39;murano:parent_types-(eid, type) :- deleteEnv(eid), murano:parent_types(eid,type)&#39;</span>
+
+<span class="gp">#</span> properties
+<span class="go">openstack congress policy rule create murano_action &#39;murano:properties-(oid, pn, pv) :- deleteEnv(eid), murano:connected(eid, oid), murano:properties(oid, pn, pv)&#39;</span>
+<span class="go">openstack congress policy rule create murano_action &#39;murano:properties-(eid, pn, pv) :- deleteEnv(eid), murano:properties(eid, pn, pv)&#39;</span>
+
+<span class="gp">#</span> objects
+<span class="go">openstack congress policy rule create murano_action &#39;murano:objects-(oid, pid, ot) :- deleteEnv(eid), murano:connected(eid, oid), murano:objects(oid, pid, ot)&#39;</span>
+<span class="go">openstack congress policy rule create murano_action &#39;murano:objects-(eid, tnid, ot) :- deleteEnv(eid), murano:objects(eid, tnid, ot)&#39;</span>
+
+<span class="gp">#</span> relationships
+<span class="go">openstack congress policy rule create murano_action &#39;murano:relationships-(sid, tid, rt) :- deleteEnv(eid), murano:connected(eid, sid), murano:relationships( sid, tid, rt)&#39;</span>
+<span class="go">openstack congress policy rule create murano_action &#39;murano:relationships-(eid, tid, rt) :- deleteEnv(eid), murano:relationships(eid, tid, rt)&#39;</span>
+
+<span class="gp">#</span> connected
+<span class="go">openstack congress policy rule create murano_action &#39;murano:connected-(tid, tid2) :- deleteEnv(eid), murano:connected(eid, tid), murano:connected(tid,tid2)&#39;</span>
+<span class="go">openstack congress policy rule create murano_action &#39;murano:connected-(eid, tid) :- deleteEnv(eid), murano:connected(eid,tid)&#39;</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Murano Policy Enforcement Setup Guide</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#setup">Setup</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="policy_enf.html"
+                                  title="previous chapter">Murano Policy Enforcement Example</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="policy_enf_dev.html"
+                                  title="next chapter">Murano Policy Enforcement - Developer Guide</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/articles/policy_enf_setup.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="policy_enf_dev.html" title="Murano Policy Enforcement - Developer Guide"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="policy_enf.html" title="Murano Policy Enforcement Example"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Murano</a> &raquo;</li>
+          <li><a href="policy_enf_index.html" accesskey="U">Murano Policy Enforcement</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Wed Apr 29 17:52:18 2015, commit 9c804c9.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

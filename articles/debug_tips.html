@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Murano TroubleShooting and Debug Tips &mdash; Murano</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.0.dev20',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Murano" href="../index.html" />
+    <link rel="next" title="Migrating applications from Murano v0.5 to Stable/Juno" href="app_migrating.html" />
+    <link rel="prev" title="Development Guidelines" href="../guidelines.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="murano-troubleshooting-and-debug-tips">
+<h1>Murano TroubleShooting and Debug Tips<a class="headerlink" href="#murano-troubleshooting-and-debug-tips" title="Permalink to this headline">¶</a></h1>
+<p>During installation and setting environment of new projects you can run into different problems.
+This section intends to reduce the time spent on the solution of these problems.</p>
+<div class="section" id="problems-during-configuration">
+<h2>Problems during configuration<a class="headerlink" href="#problems-during-configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="log-location">
+<h3>Log location<a class="headerlink" href="#log-location" title="Permalink to this headline">¶</a></h3>
+<p><em>Murano</em> is a multi component project, there several places where logs could be found.</p>
+<p>The location of the log file completely depends on the setting in the config file of the corresponding component.
+<em>log_file</em> parameter points to the log file, and if it&#8217;s omitted or commented logging will be sent to stdout.</p>
+</div>
+<div class="section" id="possible-problem-list">
+<h3>Possible problem list<a class="headerlink" href="#possible-problem-list" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><cite>murano-db-manage</cite> failed to execute<ul>
+<li>Check <cite>connection</cite> parameter in provided config file. It should be a <a class="reference external" href="http://docs.sqlalchemy.org/en/rel_0_8/core/engines.html">connection string</a>.</li>
+</ul>
+</li>
+<li>Murano Dashboard is not working<ul>
+<li>Make sure, that <em>prepare_murano.sh</em> script was executed and <em>murano</em> file located in <em>enabled</em> folder under openstack_dashboard repository.</li>
+<li>Check, that murano data is not inserted twice in the settings file and as a plugin.</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="problems-during-deployment">
+<h2>Problems during deployment<a class="headerlink" href="#problems-during-deployment" title="Permalink to this headline">¶</a></h2>
+<p>Besides identifying errors from log files, there is another and more flexible way to browse deployment errors - directly from UI.
+After <em>Deploy Failed</em> status is appeared navigate to environment components and open <em>Deployment History</em> page.
+Click on the <em>Show details</em> button located at the corresponding deployment row of the table. Then go to the <em>Logs</em> tab.
+You can see steps of the deployments and the one that failed would have red color.</p>
+<ul class="simple">
+<li>Deployment freeze after <tt class="docutils literal"><span class="pre">Begin</span> <span class="pre">execution:</span> <span class="pre">io.murano.system.Agent.call</span></tt> problem with connection between Murano Agent and spawned instance.</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li>Need to check transport access to the virtual machine (check router has gateway).</li>
+<li>Check for rabbitMq settings: verify that agent has been obtained valid rabbit parameters.
+Go to the spawned virtual machine and open <em>/etc/murano/agent.conf</em> or <em>C:MuranoAgentagent.conf</em> on Windows-based machine.
+Also, you can examine agent logs, located by default at <em>/var/log/murano-agent.log</em>
+The first part of the log file will contain reconnection attempts to the rabbit - since the valid rabbit address and queue have not been obtained yet.</li>
+<li>Check that <em>notification_driver</em> option is set to <cite>messagingv2</cite></li>
+<li>Check that linux image name is not starts with &#8216;w&#8217; letter</li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">[exceptions.EnvironmentError]:</span> <span class="pre">Unexpected</span> <span class="pre">stack</span> <span class="pre">state</span> <span class="pre">NOT_FOUND</span></tt> - problem with heat stack creation, need to examine Heat log file.
+If you are running the deployment on new tenant check that router exists and it has gateway to the external network.</li>
+<li><tt class="docutils literal"><span class="pre">Router</span> <span class="pre">could</span> <span class="pre">not</span> <span class="pre">be</span> <span class="pre">created,</span> <span class="pre">no</span> <span class="pre">external</span> <span class="pre">network</span> <span class="pre">found</span></tt> - Find <cite>external_network</cite> parameter in config file and check
+that specified external network is really exist via UI or by executiong <cite>neutron net-external-list</cite> cimmand.</li>
+<li><tt class="docutils literal"><span class="pre">NoPackageForClassFound:</span> <span class="pre">Package</span> <span class="pre">for</span> <span class="pre">class</span> <span class="pre">io.murano.Environment</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">found</span></tt> - Check that murano core package is uploaded.
+If no, the content of <cite>meta/io.murano</cite> folder should be zipped and uploaded to Murano.</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Murano TroubleShooting and Debug Tips</a><ul>
+<li><a class="reference internal" href="#problems-during-configuration">Problems during configuration</a><ul>
+<li><a class="reference internal" href="#log-location">Log location</a></li>
+<li><a class="reference internal" href="#possible-problem-list">Possible problem list</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#problems-during-deployment">Problems during deployment</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="../guidelines.html"
+                                  title="previous chapter">Development Guidelines</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="app_migrating.html"
+                                  title="next chapter">Migrating applications from Murano v0.5 to Stable/Juno</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/articles/debug_tips.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="app_migrating.html" title="Migrating applications from Murano v0.5 to Stable/Juno"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../guidelines.html" title="Development Guidelines"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Murano</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Wed Apr 29 17:52:18 2015, commit 9c804c9.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

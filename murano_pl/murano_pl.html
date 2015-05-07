@@ -1,0 +1,674 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>YAML &mdash; Murano</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.0.dev20',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Murano" href="../index.html" />
+    <link rel="up" title="MuranoPL: Murano Programming Language" href="murano_pl_index.html" />
+    <link rel="next" title="Dynamic UI Definition specification" href="../articles/dynamic_ui.html" />
+    <link rel="prev" title="MuranoPL: Murano Programming Language" href="murano_pl_index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="yaml">
+<h1>YAML<a class="headerlink" href="#yaml" title="Permalink to this headline">¶</a></h1>
+<p>YAML is human-readable data serialization format that is a superset of JSON. Unlike JSON YAML was designed to be read and written by humans and relies on visual indentation to denote nesting of data structures. This is similar to how Python uses indentation for block structures instead of curly brackets in most C-like languages. Also YAML can contain more data types comparing to JSON. See <a class="reference external" href="http://yaml.org/">http://yaml.org/</a> for detailed description of YAML.</p>
+<p>MuranoPL was designed to be representable in YAML so that MuranoPL code could remain readable and structured. Thus usually MuranoPL files are YAML encoded documents. But MuranoPL engine itself doesn&#8217;t  deal directly with YAML documents and it is up to hosting application to locate and deserialize definitions of particular classes. This gives hosting application ability to control where those definitions can be found (file system, database, remote repository etc) and possibly use some other serialization formats instead of YAML.</p>
+<dl class="docutils">
+<dt>MuranoPL engine relies on host deserialization code to automatically detect YAQL expressions in source definition and to provide them as instances of YaqlExpression class rather than plain strings. Usually YAQL expressions can be distinguished by presence of $ (dollar sign) and operators but in YAML developer can always explicitly state the type by using YAML tags. So</dt>
+<dd><div class="first last highlight-python"><div class="highlight"><pre>Some text - a string,
+$.something() - YAQL
+&quot;$.something()&quot; - string (because of quote marks)
+!!str $ - a string (because of YAML tag)
+!yaql &quot;text&quot; - YAQL  (because of YAML tag)
+</pre></div>
+</div>
+</dd>
+</dl>
+</div>
+<div class="section" id="yaql">
+<h1>YAQL<a class="headerlink" href="#yaql" title="Permalink to this headline">¶</a></h1>
+<p>YAQL (Yet Another Query Language) is a query language that was also designed as part of Murano project. MuranoPL makes an extensive use of YAQL. YAQL description can be found here: <a class="reference external" href="https://github.com/ativelkov/yaql">https://github.com/ativelkov/yaql</a></p>
+<p>In simple words YAQL is a language for expression evaluation. <tt class="docutils literal"><span class="pre">2</span> <span class="pre">+</span> <span class="pre">2,</span> <span class="pre">foo()</span> <span class="pre">&gt;</span> <span class="pre">bar(),</span> <span class="pre">true</span> <span class="pre">!=</span> <span class="pre">false</span></tt> are all valid YAQL expressions. The interesting thing in YAQL is that it has no built in list of functions. Everything YAQL can access is customizable. YAQL cannot call any function that was not explicitly registered to be accessible by YAQL. The same is true for operators. So the result of expression 2 * foo(3, 4) is completely depended on explicitly provided implementations of &#8220;foo&#8221; and &#8220;operator_*&#8221;.
+YAQL uses dollar sign ($) to access external variables (that are also explicitly provided by host application) and function arguments. <tt class="docutils literal"><span class="pre">$variable</span></tt> is a syntax to get the value of variable &#8220;$variable&#8221;,
+$1, $2 etc are the names for function arguments. &#8220;$&#8221; is a name for current object - data on which the expression is evaluated or a name of a single argument. Thus $ in the beginning of expression and $ in middle of it can refer to different things.</p>
+<p>YAQL has a lot of functions out of the box that can be registered in YAQL context. For example</p>
+<p><tt class="docutils literal"><span class="pre">$.where($.myObj.myScalar</span> <span class="pre">&gt;</span> <span class="pre">5</span> <span class="pre">and</span> <span class="pre">$.myObj.myArray.len()</span> <span class="pre">&gt;</span> <span class="pre">0</span> <span class="pre">and</span> <span class="pre">$.myObj.myArray.any($</span> <span class="pre">=</span> <span class="pre">4)).select($.myObj.myArray[0])</span></tt> can be executed on <tt class="docutils literal"><span class="pre">$</span> <span class="pre">=</span> <span class="pre">array</span></tt> of objects and has a result of another array that is a filtration and projection of a source data. This is very similar to how SQL works but uses more Python-like syntax.</p>
+<p>Note that there is no assignment operator in YAQL and &#8216;=&#8217; means comparision operator that is what &#8216;==&#8217; means in Python.</p>
+<p>Because YAQL has no access to underlying operating system resources and 100% controllable by the host it is secure to execute YAQL expressions without establishing a trust to executed code. Also because of the functions are not predefined different functions may be accessible in different contexts. So the YAQL expressions that are used to specify property contracts are not necessarily valid in workflow definitions.</p>
+</div>
+<div class="section" id="common-class-structure">
+<h1>Common class structure<a class="headerlink" href="#common-class-structure" title="Permalink to this headline">¶</a></h1>
+<p>Here is a common template for class declarations. In sections below I&#8217;m going to explain what each section means. Note that it is in YAML format.</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">Name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">class name</span>
+<span class="l-Scalar-Plain">Namespaces</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">namespaces specification</span>
+<span class="l-Scalar-Plain">Extends</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="nv">list of parent classes</span><span class="p-Indicator">]</span>
+<span class="l-Scalar-Plain">Properties</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">properties declaration</span>
+<span class="l-Scalar-Plain">Workflow</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">methodName</span><span class="p-Indicator">:</span>
+        <span class="l-Scalar-Plain">Arguments</span><span class="p-Indicator">:</span>
+            <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">list</span>
+            <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">of</span>
+            <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">arguments</span>
+        <span class="l-Scalar-Plain">Body</span><span class="p-Indicator">:</span>
+            <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">list</span>
+            <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">of</span>
+            <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">instructions</span>
+</pre></div>
+</div>
+<p>Thus MuranoPL class is a YAML dictionary with predefined key names. All keys except for Name are optional and can be omitted (but must be valid if present)</p>
+<div class="section" id="class-name">
+<h2>Class name<a class="headerlink" href="#class-name" title="Permalink to this headline">¶</a></h2>
+<p>Class names are alphanumeric names of the classes. By tradition all class names begin with upper-case letter and written in PascalCasing.</p>
+<p>In Murano all class names are globally unique. This achieved by means of namespaces. Class name may have explicit namespace specification (like ns:MyName) or implicit (just MyName which would be equal to =:MyName if = was a valid in name specification)</p>
+</div>
+<div class="section" id="namespaces">
+<h2>Namespaces<a class="headerlink" href="#namespaces" title="Permalink to this headline">¶</a></h2>
+<p>Namespaces declaration specifies prefixes that can be used in class body to make long class names shorter.</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">Namespaces</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">=</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano.services.windows</span>
+    <span class="l-Scalar-Plain">srv</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano.services</span>
+    <span class="l-Scalar-Plain">std</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">io.murano</span>
+</pre></div>
+</div>
+<p>In example above class name srv:Something would be automatically translated to &#8220;io.murano.services.Something&#8221;.</p>
+<p>&#8220;=&#8221; means &#8220;current namespace&#8221; so that &#8220;MyClass&#8221; would mean &#8220;io.murano.services.windows.MyClass&#8221; in example above.</p>
+<p>If class name contains period sign (.) in its name then it is assumed to be already fully namespace-qualified and is not expanded. Thus ns.Myclass would remain as is.</p>
+<p>To make class names globally unique it is recommended to have developer&#8217;s domain name as part of namespace (as in example, similar to Java)</p>
+</div>
+<div class="section" id="extends">
+<h2>Extends<a class="headerlink" href="#extends" title="Permalink to this headline">¶</a></h2>
+<p>MuranoPL supports multiple inheritance. If present, Extends section lists base classes that are extended. If the list consists of single entry then it may be written as a scalar string instead of array. If no parents specified (or a key is omitted) then &#8220;io.murano.Object&#8221; is assumed making it the root class for all class hierarchies.</p>
+</div>
+<div class="section" id="properties">
+<h2>Properties<a class="headerlink" href="#properties" title="Permalink to this headline">¶</a></h2>
+<p>Properties are class attributes that together with methods form public class interface. Usually (but not always) properties are the values and references to other objects that are required to be entered in environment designer prior to workflow invocation.</p>
+<p>Properties have the following declaration format:</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">propertyName</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">Contract</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">property contract</span>
+    <span class="l-Scalar-Plain">Usage</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">property usage</span>
+    <span class="l-Scalar-Plain">Default</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">property default</span>
+</pre></div>
+</div>
+<div class="section" id="contract">
+<h3>Contract<a class="headerlink" href="#contract" title="Permalink to this headline">¶</a></h3>
+<p>Contracts are YAQL expressions that say what type of value is expected for the property as well as additional constraints imposed on the property.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="38%" />
+<col width="62%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Operation</th>
+<th class="head">Definition</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>$.int()</td>
+<td>integer value (may be null). String values that consist of digits would be converted to integer</td>
+</tr>
+<tr class="row-odd"><td>$.int().notNull()</td>
+<td>mandatory integer</td>
+</tr>
+<tr class="row-even"><td><div class="first last line-block">
+<div class="line">$.string()</div>
+<div class="line">$.string().notNull()</div>
+</div>
+</td>
+<td>the same for strings. If the supplied value is not a string it will be converted to string</td>
+</tr>
+<tr class="row-odd"><td><div class="first last line-block">
+<div class="line">$.bool()</div>
+<div class="line">$.bool().notNull()</div>
+</div>
+</td>
+<td>bools are true and false. 0 is converted to false, other integers to true</td>
+</tr>
+<tr class="row-even"><td><div class="first last line-block">
+<div class="line">$.class(ns:ClassName)</div>
+<div class="line">$.class(ns:ClassName).notNull()</div>
+</div>
+</td>
+<td>value must be a reference to an instance of specified class name</td>
+</tr>
+<tr class="row-odd"><td>$.class(ns:ClassName, ns:DefaultClassName)</td>
+<td>create instance of ns:DefaultClassName class if no instance provided</td>
+</tr>
+<tr class="row-even"><td>$.class(ns:Name).check($.p = 12)</td>
+<td>value must be of type ns:Name and have a property &#8216;p&#8217; equal to 12</td>
+</tr>
+<tr class="row-odd"><td><div class="first last line-block">
+<div class="line">[$.int()]</div>
+<div class="line">[$.int().notNull()]</div>
+</div>
+</td>
+<td>array of integers. Similar for other types</td>
+</tr>
+<tr class="row-even"><td>[$.int().check($ &gt; 0)]</td>
+<td>array of positive integers (thus not null)</td>
+</tr>
+<tr class="row-odd"><td>[$.int(), $.string()]</td>
+<td>array that has at least two elements, first is int and others are strings</td>
+</tr>
+<tr class="row-even"><td><div class="first last line-block">
+<div class="line">[$.int(), 2]</div>
+<div class="line">[$.int(), 2, 5]</div>
+</div>
+</td>
+<td><div class="first last line-block">
+<div class="line">array of ints with at least 2 items</div>
+<div class="line">... and maximum of 5 items</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td>{ A: $.int(), B: [$.string()] }</td>
+<td>dictionary with &#8216;A&#8217; key of type int and &#8216;B&#8217; - array of strings</td>
+</tr>
+<tr class="row-even"><td><div class="first last line-block">
+<div class="line">$</div>
+<div class="line">[]</div>
+<div class="line">{}</div>
+</div>
+</td>
+<td>any scalar or data structure as is
+any array
+any dictionary</td>
+</tr>
+<tr class="row-odd"><td>{ $.string().notNull(): $.int().notNull() }</td>
+<td>dictionary string -&gt; int</td>
+</tr>
+<tr class="row-even"><td><div class="first last line-block">
+<div class="line">A: StringMap</div>
+<div class="line">$.string().notNull(): $</div>
+</div>
+</td>
+<td>dictionary with &#8216;A&#8217; key that must be equal to &#8216;StringMap&#8217; and other keys be any scalar or data
+structure</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="usage">
+<h3>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h3>
+<p>Usage states purpose of the property. This implies who and how can access it. The following usages are available:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="7%" />
+<col width="93%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Property</th>
+<th class="head">Explanation</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">In</span></tt></td>
+<td>Input property. Values of such properties are obtained from user and cannot be modified in MuranoPL workflows. This is default value for Usage key</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">Out</span></tt></td>
+<td>The value is obtained from executing MuranoPL workflow and cannot be modified by the user</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">InOut</span></tt></td>
+<td>Value can be edited by both user and workflow</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">Const</span></tt></td>
+<td>The same as In but once workflow is executed the property cannot be changed neither by user not the workflow</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Runtime</span></tt></td>
+<td>Property is visible only from within workflows. It neither read from input neither serialized to workflow output</td>
+</tr>
+</tbody>
+</table>
+<p>Usage attribute is optional and can be omitted (which implies In).</p>
+<p>If the workflow tries to write to a property that is not declared with one of the types above it is considered to be private and accessible only to that class (and not serialized to output and thus would be lost upon next deployment). Attempt to read property that wasn&#8217;t initialized causes exception to be thrown.</p>
+</div>
+<div class="section" id="default">
+<h3>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h3>
+<p>Default is a value that would be used if the property value wasn&#8217;t mentioned in input object model (but not when it is provided as null). Default (if specified) must conform to declared property contract. If Default is not specified then null is the default.</p>
+<dl class="docutils">
+<dt>For properties that are references to other classes Default can modify default values for referenced value. For example</dt>
+<dd><div class="first last highlight-python"><div class="highlight"><pre>p:
+  Contract: $.class(MyClass)
+  Default: {a: 12}
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>would override default for &#8216;a&#8217; property of MyClass for instance of MyClass that is created for this property.</p>
+</div>
+</div>
+<div class="section" id="workflow">
+<h2>Workflow<a class="headerlink" href="#workflow" title="Permalink to this headline">¶</a></h2>
+<p>Workflows are the methods that together describe how the entities that are represented by MuranoPL classes are deployed.</p>
+<p>In typical scenario root object in input data model is of type io.murano.Environment and has a &#8220;deploy&#8221; method. Invoking this method causes a series of infrastructure activities (typically by modifying Heat stack) and VM agents commands that cause execution of deployment scripts. Workflow role is to map data from input object model (or result of previously executed actions) to parameters of those activities and to initiate those activities in correct order.
+Methods have input parameters and can return value to the caller.
+Methods defined in Workflow section of the class using the following template:</p>
+<blockquote>
+<div><div class="highlight-python"><div class="highlight"><pre>methodName:
+    Arguments:
+        - list
+        - of
+        - arguments
+    Body:
+        - list
+        - of
+        - instructions
+</pre></div>
+</div>
+</div></blockquote>
+<p>Arguments are optional and (if specified) declared using the same syntax as class properties except for Usage attribute that is meaningless for method parameters. E.g. arguments also have a contract and optional default.</p>
+<p>Method body is an array of instructions that got executed sequentially. There are 3 types of instructions that can be found in workflow body: expressions, assignment and block constructs.</p>
+<div class="section" id="expressions">
+<h3>Expressions<a class="headerlink" href="#expressions" title="Permalink to this headline">¶</a></h3>
+<p>Expressions are YAQL expressions that are executed for their side effect. All accessible object methods can be called in expression using $obj.methodName(arguments) syntax.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="40%" />
+<col width="60%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Expression</th>
+<th class="head">Explanation</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><div class="first last line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">$.methodName()</span></tt></div>
+<div class="line"><tt class="docutils literal"><span class="pre">$this.methodName()</span></tt></div>
+</div>
+</td>
+<td>invoke method &#8216;methodName&#8217; on this (self) object</td>
+</tr>
+<tr class="row-odd"><td><div class="first last line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">$.property.methodName()</span></tt></div>
+<div class="line"><tt class="docutils literal"><span class="pre">$this.property.methodName()</span></tt></div>
+</div>
+</td>
+<td>invocation of method on object that is in &#8216;property&#8217; property</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">$.method(1,</span> <span class="pre">2,</span> <span class="pre">3)</span></tt></td>
+<td>methods can have arguments</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">$.method(1,</span> <span class="pre">2,</span> <span class="pre">thirdParameter</span> <span class="pre">=&gt;</span> <span class="pre">3)</span></tt></td>
+<td>named parameters also supported</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">list($.foo().bar($this.property),</span> <span class="pre">$p)</span></tt></td>
+<td>complex expressions can be constructed</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="assignment">
+<h3>Assignment<a class="headerlink" href="#assignment" title="Permalink to this headline">¶</a></h3>
+<p>Assignments are single-key dictionaries with YAQL expression as key and arbitrary structure as a value. Such construct evaluated as assignment.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="23%" />
+<col width="52%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Assignment</th>
+<th class="head" colspan="2">Explanation</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">$x:</span> <span class="pre">value</span></tt></td>
+<td colspan="2">assigns ‘value’ to local variable $x</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">$.x:</span> <span class="pre">value</span></tt>
+<tt class="docutils literal"><span class="pre">$this.x:</span> <span class="pre">value</span></tt></td>
+<td colspan="2">assign value to object’s property</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">$.x:</span> <span class="pre">$.y</span></tt></td>
+<td colspan="2">copy value of property &#8216;y&#8217; to property &#8216;x&#8217;</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">$x:</span> <span class="pre">[$a,</span> <span class="pre">$b]</span></tt></td>
+<td colspan="2">sets $x to array of 2 values $a and $b</td>
+</tr>
+<tr class="row-even"><td><div class="first last line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">$x:</span></tt></div>
+<div class="line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">SomeKey:</span></tt></div>
+<div class="line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">NestedKey:</span> <span class="pre">$variable</span></tt></div>
+</div>
+</div>
+</div>
+</td>
+<td colspan="2">structures of any level of complexity can be evaluated</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">$.x[0]:</span> <span class="pre">value`</span></tt></td>
+<td colspan="2">assign value to a first array entry of property x</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">$.x.append():</span> <span class="pre">value</span></tt></td>
+<td colspan="2">append value to array in property x</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">$.x.insert(1):</span> <span class="pre">value</span></tt></td>
+<td colspan="2">insert value into position 1</td>
+</tr>
+<tr class="row-even"><td><div class="first last line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">$.x.key.subKey:</span> <span class="pre">value</span></tt></div>
+<div class="line"><tt class="docutils literal"><span class="pre">$.x[key][subKey]:</span> <span class="pre">value</span></tt></div>
+</div>
+</td>
+<td colspan="2">deep dictionary modification</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="block-constructs">
+<h3>Block constructs<a class="headerlink" href="#block-constructs" title="Permalink to this headline">¶</a></h3>
+<p>Block constructs control program flow. Block constructs are dictionaries that have strings as all its keys.
+The following block constructs are available:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="27%" />
+<col width="73%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Assignment</th>
+<th class="head">Explanation</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Return:</span> <span class="pre">value</span></tt></td>
+<td>return value from a method</td>
+</tr>
+<tr class="row-odd"><td><div class="first last line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">If:</span> <span class="pre">predicate()</span></tt></div>
+<div class="line"><tt class="docutils literal"><span class="pre">Then:</span></tt></div>
+<div class="line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">-</span> <span class="pre">code</span></tt></div>
+<div class="line"><tt class="docutils literal"><span class="pre">-</span> <span class="pre">block</span></tt></div>
+</div>
+<div class="line"><tt class="docutils literal"><span class="pre">Else:</span></tt></div>
+<div class="line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">-</span> <span class="pre">code</span></tt></div>
+<div class="line"><tt class="docutils literal"><span class="pre">-</span> <span class="pre">block</span></tt></div>
+</div>
+</div>
+</td>
+<td><p class="first">predicate() is YAQL expressions that must be evaluated to true or false.</p>
+<p>else part is optional</p>
+<p class="last">one-line code blocks can be written as a scalars rather than array.</p>
+</td>
+</tr>
+<tr class="row-even"><td><div class="first last line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">While:</span> <span class="pre">predicate()</span></tt></div>
+<div class="line"><tt class="docutils literal"><span class="pre">Do:</span></tt>
+| <tt class="docutils literal"><span class="pre">-</span> <span class="pre">code</span></tt>
+| <tt class="docutils literal"><span class="pre">-</span> <span class="pre">block</span></tt></div>
+</div>
+</td>
+<td>predicate() must be evaluated to true or false</td>
+</tr>
+<tr class="row-odd"><td><div class="first last line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">For:</span> <span class="pre">variableName</span></tt></div>
+<div class="line"><tt class="docutils literal"><span class="pre">In:</span> <span class="pre">collection</span></tt></div>
+<div class="line"><tt class="docutils literal"><span class="pre">Do:</span></tt></div>
+<div class="line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">-</span> <span class="pre">code</span></tt></div>
+<div class="line"><tt class="docutils literal"><span class="pre">-</span> <span class="pre">block</span></tt></div>
+</div>
+</div>
+</td>
+<td><dl class="first docutils">
+<dt>collection must be YAQL expression returning iterable collection or</dt>
+<dd>evaluatable array as in assignment instructions (like [1, 2, $x])</dd>
+</dl>
+<p class="last">inside code block loop variable is accessible as $variableName</p>
+</td>
+</tr>
+<tr class="row-even"><td><div class="first last line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">Repeat:</span></tt></div>
+<div class="line"><tt class="docutils literal"><span class="pre">Do:</span></tt></div>
+<div class="line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">-</span> <span class="pre">code</span></tt></div>
+<div class="line"><tt class="docutils literal"><span class="pre">-</span> <span class="pre">block</span></tt></div>
+</div>
+</div>
+</td>
+<td>repeat code block specified number of times</td>
+</tr>
+<tr class="row-odd"><td>Break:</td>
+<td>breaks from loop</td>
+</tr>
+<tr class="row-even"><td><div class="first last line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">Match:</span></tt></div>
+<div class="line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">case1:</span></tt></div>
+<div class="line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">-</span> <span class="pre">code</span></tt></div>
+<div class="line"><tt class="docutils literal"><span class="pre">-</span> <span class="pre">block</span></tt></div>
+</div>
+<div class="line"><tt class="docutils literal"><span class="pre">case2:</span></tt></div>
+<div class="line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">-</span> <span class="pre">code</span></tt></div>
+<div class="line"><tt class="docutils literal"><span class="pre">-</span> <span class="pre">block</span></tt></div>
+</div>
+</div>
+<div class="line"><tt class="docutils literal"><span class="pre">Value:</span> <span class="pre">$valueExpression()</span></tt></div>
+<div class="line"><tt class="docutils literal"><span class="pre">Default:</span></tt></div>
+<div class="line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">-</span> <span class="pre">code</span></tt></div>
+<div class="line"><tt class="docutils literal"><span class="pre">-</span> <span class="pre">block</span></tt></div>
+</div>
+</div>
+</td>
+<td><p class="first">matches result of $valueExpression() against set of possible values (cases).
+the code block of first matched cased is executed.</p>
+<dl class="docutils">
+<dt>if not case matched and Default key is present (it is optional)</dt>
+<dd>than Default code block get executed.</dd>
+</dl>
+<p class="last">case values are constant values (not expressions)</p>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="first last line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">Switch:</span></tt></div>
+<div class="line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">$predicate1()</span> <span class="pre">:</span></tt></div>
+<div class="line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">-</span> <span class="pre">code</span></tt></div>
+<div class="line"><tt class="docutils literal"><span class="pre">-</span> <span class="pre">block</span></tt></div>
+</div>
+<div class="line"><tt class="docutils literal"><span class="pre">$predicate2()</span> <span class="pre">:</span></tt></div>
+<div class="line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">-</span> <span class="pre">code</span></tt></div>
+<div class="line"><tt class="docutils literal"><span class="pre">-</span> <span class="pre">block</span></tt></div>
+</div>
+</div>
+<div class="line"><tt class="docutils literal"><span class="pre">Default:</span></tt></div>
+<div class="line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">-</span> <span class="pre">code</span></tt></div>
+<div class="line"><tt class="docutils literal"><span class="pre">-</span> <span class="pre">block</span></tt></div>
+</div>
+</div>
+</td>
+<td><dl class="first docutils">
+<dt>all code blocks that have their predicate evaluated to true are executed but the order</dt>
+<dd>of predicate evaluation is not fixed</dd>
+</dl>
+<p>default key is optional.</p>
+<p class="last">if no predicate evaluated to true than Default code block get executed.</p>
+</td>
+</tr>
+<tr class="row-even"><td><div class="first last line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">Parallel:</span></tt></div>
+<div class="line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">-</span> <span class="pre">code</span></tt></div>
+<div class="line"><tt class="docutils literal"><span class="pre">-</span> <span class="pre">block</span></tt></div>
+</div>
+<div class="line"><tt class="docutils literal"><span class="pre">Limit:</span> <span class="pre">5</span></tt></div>
+</div>
+</td>
+<td><p class="first">executes all instructions in code block in separate green threads in parallel</p>
+<p class="last">limit is optional and means the maximum number of concurrent green threads.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="object-model">
+<h2>Object model<a class="headerlink" href="#object-model" title="Permalink to this headline">¶</a></h2>
+<p>Object model is JSON-serialized representation of objects and their properties. Everything user does in environment builder (dashboard) is reflected in object model. Object model is sent to App Catalog engine upon user decides to deploy built environment. On engine side MuranoPL objects are constructed and initialized from received Object model and predefined method is executed on a root object.</p>
+<p>Objects serialized to JSON using the following template:</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="p-Indicator">{</span>
+    <span class="s">&quot;?&quot;</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span>
+        <span class="s">&quot;id&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;globally</span><span class="nv"> </span><span class="s">unique</span><span class="nv"> </span><span class="s">object</span><span class="nv"> </span><span class="s">ID</span><span class="nv"> </span><span class="s">(UUID)&quot;</span><span class="p-Indicator">,</span>
+        <span class="s">&quot;type&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;fully</span><span class="nv"> </span><span class="s">namespace-qualified</span><span class="nv"> </span><span class="s">class</span><span class="nv"> </span><span class="s">name&quot;</span><span class="p-Indicator">,</span>
+
+        <span class="s">&quot;optional</span><span class="nv"> </span><span class="s">designer-related</span><span class="nv"> </span><span class="s">entries</span><span class="nv"> </span><span class="s">can</span><span class="nv"> </span><span class="s">be</span><span class="nv"> </span><span class="s">placed</span><span class="nv"> </span><span class="s">here&quot;</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span>
+            <span class="s">&quot;key&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;value&quot;</span>
+        <span class="p-Indicator">}</span>
+    <span class="p-Indicator">},</span>
+
+    <span class="s">&quot;classProperty1&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;propertyValue&quot;</span><span class="p-Indicator">,</span>
+    <span class="s">&quot;classProperty2&quot;</span><span class="p-Indicator">:</span> <span class="nv">123</span><span class="p-Indicator">,</span>
+    <span class="s">&quot;classProperty3&quot;</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="s">&quot;value1&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;value2&quot;</span><span class="p-Indicator">],</span>
+
+    <span class="s">&quot;reference1&quot;</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span>
+        <span class="s">&quot;?&quot;</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span>
+            <span class="s">&quot;id&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;object</span><span class="nv"> </span><span class="s">id&quot;</span><span class="p-Indicator">,</span>
+            <span class="s">&quot;type&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;object</span><span class="nv"> </span><span class="s">type&quot;</span>
+        <span class="p-Indicator">},</span>
+
+        <span class="s">&quot;property&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;value&quot;</span>
+    <span class="p-Indicator">},</span>
+
+    <span class="s">&quot;reference2&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;referenced</span><span class="nv"> </span><span class="s">object</span><span class="nv"> </span><span class="s">id&quot;</span>
+<span class="p-Indicator">}</span>
+</pre></div>
+</div>
+<p>Objects can be identified as dictionaries that contain &#8221;?&#8221; entry. All system fields are hidden in that entry.</p>
+<p>There are 2 ways to specify references. The first method (&#8220;reference1&#8221; in example above) allow inline definition of object. When instance of referenced object is created outer object becomes its parent (owner) that is responsible for the object. The object itself may require that its parent (direct or indirect) be of specified type (like all application require to have Environment somewhere in parent chain).</p>
+<p>Second way to reference object is by specifying other object id. That object must be defined somewhere else in object tree. Object references distinguished from strings having the same value by evaluating property contracts. The former case would have $.class(Name) while the later $.string() contract.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">YAML</a></li>
+<li><a class="reference internal" href="#yaql">YAQL</a></li>
+<li><a class="reference internal" href="#common-class-structure">Common class structure</a><ul>
+<li><a class="reference internal" href="#class-name">Class name</a></li>
+<li><a class="reference internal" href="#namespaces">Namespaces</a></li>
+<li><a class="reference internal" href="#extends">Extends</a></li>
+<li><a class="reference internal" href="#properties">Properties</a><ul>
+<li><a class="reference internal" href="#contract">Contract</a></li>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#default">Default</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#workflow">Workflow</a><ul>
+<li><a class="reference internal" href="#expressions">Expressions</a></li>
+<li><a class="reference internal" href="#assignment">Assignment</a></li>
+<li><a class="reference internal" href="#block-constructs">Block constructs</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#object-model">Object model</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="murano_pl_index.html"
+                                  title="previous chapter">MuranoPL: Murano Programming Language</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="../articles/dynamic_ui.html"
+                                  title="next chapter">Dynamic UI Definition specification</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/murano_pl/murano_pl.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../articles/dynamic_ui.html" title="Dynamic UI Definition specification"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="murano_pl_index.html" title="MuranoPL: Murano Programming Language"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Murano</a> &raquo;</li>
+          <li><a href="murano_pl_index.html" accesskey="U">MuranoPL: Murano Programming Language</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Wed Apr 29 17:52:18 2015, commit 9c804c9.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

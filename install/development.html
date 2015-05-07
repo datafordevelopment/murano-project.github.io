@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installing and Running the Development Version &mdash; Murano</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2015.2.0.dev20',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Murano" href="../index.html" />
+    <link rel="up" title="Murano Installation Guide" href="index.html" />
+    <link rel="next" title="Installing and Running Manually" href="manual.html" />
+    <link rel="prev" title="Prepare A Lab For Murano" href="prepare.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="installing-and-running-the-development-version">
+<h1>Installing and Running the Development Version<a class="headerlink" href="#installing-and-running-the-development-version" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference external" href="https://git.openstack.org/cgit/openstack/murano/tree/contrib/devstack">contrib/devstack</a> directory contains the files necessary to integrate
+Murano with <a class="reference external" href="http://www.devstack.org/">Devstack</a>.</p>
+<ol class="arabic">
+<li><p class="first">Follow Devstack documentation to setup a host for Devstack. Then clone
+Devstack source code.</p>
+</li>
+<li><p class="first">Copy Murano integration scripts to Devstack:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ cp lib/murano ${DEVSTACK_DIR}/lib
+$ cp lib/murano-dashboard ${DEVSTACK_DIR}/lib
+$ cp extras.d/70-murano.sh ${DEVSTACK_DIR}/extras.d
+</pre></div>
+</div>
+</li>
+<li><p class="first">Create a <tt class="docutils literal"><span class="pre">localrc</span></tt> file as input to devstack.</p>
+</li>
+<li><p class="first">The Murano services are not enabled by default, so they must be
+enabled in <tt class="docutils literal"><span class="pre">localrc</span></tt> before running <tt class="docutils literal"><span class="pre">stack.sh</span></tt>. This example <tt class="docutils literal"><span class="pre">localrc</span></tt>
+file shows all of the settings required for Murano:</p>
+<div class="highlight-python"><div class="highlight"><pre># Enable Heat
+enable_service heat h-api h-api-cfn h-api-cw h-eng
+
+# Enable Murano
+enable_service murano murano-api murano-engine
+</pre></div>
+</div>
+</li>
+<li><p class="first">Deploy your OpenStack Cloud with Murano:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ ./stack.sh
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="prepare.html"
+                                  title="previous chapter">Prepare A Lab For Murano</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="manual.html"
+                                  title="next chapter">Installing and Running Manually</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/install/development.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="manual.html" title="Installing and Running Manually"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="prepare.html" title="Prepare A Lab For Murano"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Murano</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Murano Installation Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Wed Apr 29 17:52:18 2015, commit 9c804c9.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>
